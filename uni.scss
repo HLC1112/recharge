@@ -1,0 +1,107 @@
+/* ===== 基础 ===== */
+* { box-sizing: border-box; }
+html, body, #app { height: 100%; }
+body {
+  margin: 0;
+  background-color: #0b1216; /* 纯色，避免 gradient 函数 */
+  color: #e6f7f7;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* ===== 页面三栏：左(固定) - 中(自适应) - 右(固定) ===== */
+.page { display: flex; height: 100%; }
+
+/* 左侧控制栏 */
+.controls {
+  width: 320px;
+  padding: 14px;
+  border-right: 1px solid rgba(255,255,255,.06);
+  background-color: rgba(255,255,255,.02);
+  display: flex;
+  flex-direction: column;
+}
+.controls .title { font-weight: 600; color: #8ef9f3; margin-bottom: 10px; }
+.controls .btn {
+  margin-bottom: 10px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(129,255,238,.25);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #e6f7f7;
+}
+.controls .ipt {
+  margin-bottom: 10px;
+  background: #0b1216;
+  border: 1px solid rgba(129,255,238,.25);
+  color: #e6f7f7;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* 中间画布 */
+.board { flex: 1 1 auto; padding: 18px; overflow: auto; }
+.board-inner { /* 块与块之间的间距由 plane 自己处理 */ }
+
+/* 右侧日志栏 */
+.trace-log {
+  width: 420px;
+  border-left: 1px solid rgba(255,255,255,.06);
+  background-color: rgba(255,255,255,.02);
+  display: flex;
+  flex-direction: column;
+}
+.trace-head { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,.06); }
+.trace-title { color: #8ef9f3; font-weight: 700; font-size: 16px; }
+.trace-body { flex: 1; overflow: auto; padding: 10px 14px; }
+.trace-line { font-family: Menlo, Consolas, monospace; font-size: 12px; padding: 3px 0; white-space: pre-wrap; color: #cce7e7; }
+.trace-line .tag { color: #6ff; margin-right: 6px; }
+.trace-line.ok { color: #9f9; }
+.trace-line .warn { color: #ff9; }
+.trace-line .err { color: #f99; }
+
+/* ===== 平面容器 ===== */
+.plane {
+  border: 1px dashed rgba(129,255,238,.25);
+  border-radius: 14px;
+  padding: 14px;
+  background-color: rgba(255,255,255,.02);
+  margin-bottom: 16px;
+}
+.plane-title-text { color: #8ef9f3; font-weight: 600; font-size: 14px; display: inline-block; margin-bottom: 10px; }
+
+/* 使用 flex 实现“伪 12 栏网格” */
+.plane-grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -6px; /* 用子元素 margin 实现行列间距 */
+}
+.node {
+  margin: 6px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(129,255,238,.25);
+  border-radius: 10px;
+  padding: 8px 10px;
+  min-height: 40px;
+}
+.node-title { font-size: 12px; color: #9ab7b7; margin-bottom: 4px; }
+.node-body { font-size: 13px; line-height: 1.3; }
+
+/* 状态色（仅改边框色） */
+.festate   { border-color: #00e5ff; }
+.endstate  { border-color: #c3ff00; }
+.blockstate{ border-color: #ff8a80; }
+
+/* 12 栏宽度（不使用 calc/minmax/变量/函数） */
+.col-1  { width: 8.3333%; }
+.col-2  { width: 16.6667%; }
+.col-3  { width: 25%; }
+.col-4  { width: 33.3333%; }
+.col-5  { width: 41.6667%; }
+.col-6  { width: 50%; }
+.col-7  { width: 58.3333%; }
+.col-8  { width: 66.6667%; }
+.col-9  { width: 75%; }
+.col-10 { width: 83.3333%; }
+.col-11 { width: 91.6667%; }
+.col-12 { width: 100%; }

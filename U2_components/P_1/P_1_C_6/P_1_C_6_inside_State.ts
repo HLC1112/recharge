@@ -1,0 +1,1 @@
+export const P_1_C_6_inside_State = {};

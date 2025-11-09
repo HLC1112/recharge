@@ -1,0 +1,1 @@
+export const P_1_C_123_U9_domain = {};

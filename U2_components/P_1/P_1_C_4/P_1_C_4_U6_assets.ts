@@ -1,0 +1,1 @@
+export const P_1_C_4_U6_assets = {};
