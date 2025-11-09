@@ -225,12 +225,14 @@ export function usePanelOrchestrator() {
           
           nodesMap.set(parsedNode.id, nodeData);
           
-          // 调试：输出前几个节点的样式信息
-          if (nodesMap.size <= 3) {
+          // 调试：输出前几个节点的样式信息，以及 BE_APIGateway 节点
+          if (nodesMap.size <= 3 || parsedNode.id === 'BE_APIGateway') {
             console.log(`[panelOrchestrator] 添加节点 ${parsedNode.id}:`, {
               text: parsedNode.label,
               cssStyle: parsedNode.cssStyle,
-              parentComponentId: parsedNode.parentComponentId
+              parentComponentId: parsedNode.parentComponentId,
+              componentId: parsedNode.componentId,
+              type: parsedNode.type
             });
           }
         }
@@ -353,6 +355,20 @@ export function usePanelOrchestrator() {
         addLog(`示例节点: ${sample.id} -> parentComponentId: ${(sample as any).parentComponentId}`, 'info');
       } else {
         addLog('警告：没有节点包含parentComponentId，检查nodeMapping.json是否正确生成', 'warn');
+      }
+      
+      // 特别检查 BE_APIGateway 节点
+      const beGatewayNode = nodesMap.get('BE_APIGateway');
+      if (beGatewayNode) {
+        console.log(`[panelOrchestrator] BE_APIGateway 节点信息:`, {
+          id: beGatewayNode.id,
+          text: beGatewayNode.text,
+          type: beGatewayNode.type,
+          parentComponentId: (beGatewayNode as any).parentComponentId,
+          componentId: (beGatewayNode as any).componentId
+        });
+      } else {
+        console.warn(`[panelOrchestrator] 警告: 未找到 BE_APIGateway 节点`);
       }
 
       // 按父组件分组节点

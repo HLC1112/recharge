@@ -157,7 +157,7 @@
     "styleClass": "httpevent",
     "styleSummary": "形状: parallelogram，填充: #f5f5f5，边框: #555",
     "componentId": "P_1_C_110",
-    "parentComponentId": "P_1_C_38"
+    "parentComponentId": "P_1_C_37"
   },
   "HTTP_Res_OK": {
     "nodeId": "HTTP_Res_OK",
@@ -165,7 +165,7 @@
     "styleClass": "httpevent",
     "styleSummary": "shape:parallelogram,fill:#f5f5f5,stroke:#555,color:#333",
     "componentId": "P_1_C_110",
-    "parentComponentId": "P_1_C_38"
+    "parentComponentId": "P_1_C_37"
   },
   "HTTP_Res_Blocked": {
     "nodeId": "HTTP_Res_Blocked",
@@ -173,7 +173,7 @@
     "styleClass": "httpevent",
     "styleSummary": "shape:parallelogram,fill:#f5f5f5,stroke:#555,color:#333",
     "componentId": "P_1_C_110",
-    "parentComponentId": "P_1_C_38"
+    "parentComponentId": "P_1_C_37"
   },
   "BE_APIGateway": {
     "nodeId": "BE_APIGateway",

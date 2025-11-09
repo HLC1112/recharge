@@ -20,7 +20,7 @@
 
       >
 
-        {{ node.label || node.id }}
+        {{ (node as any).text || (node as any).label || node.id }}
 
       </div>
 

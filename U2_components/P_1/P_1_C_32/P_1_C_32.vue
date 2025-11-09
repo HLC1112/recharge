@@ -22,7 +22,7 @@
 
       >
 
-        {{ node.label || (node as any).text || node.id }}
+        {{ (node as any).text || (node as any).label || node.id }}
 
       </div>
 

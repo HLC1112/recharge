@@ -104,7 +104,21 @@ export function usePlaneNodes(props: IProps) {
 
   const frontendNodes = computed(() => filterNodesByParentIds(frontendParentIds));
 
-  const httpsNodes = computed(() => filterNodesByParentIds(httpsParentIds));
+  const httpsNodes = computed(() => {
+    const filtered = filterNodesByParentIds(httpsParentIds);
+    console.log(`[usePlaneNodes] HTTPS平面: 输入 ${props.nodes.length} 个节点, 过滤后 ${filtered.length} 个节点`);
+    // 检查 BE_APIGateway 节点
+    const beGateway = props.nodes.find(n => n.id === 'BE_APIGateway');
+    if (beGateway) {
+      console.log(`[usePlaneNodes] BE_APIGateway 节点信息:`, {
+        id: beGateway.id,
+        parentComponentId: (beGateway as any).parentComponentId,
+        type: beGateway.type,
+        inFiltered: filtered.some(n => n.id === 'BE_APIGateway')
+      });
+    }
+    return filtered;
+  });
 
   const backendNodes = computed(() => filterNodesByParentIds(backendParentIds));
 

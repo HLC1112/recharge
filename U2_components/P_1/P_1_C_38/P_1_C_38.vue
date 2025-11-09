@@ -15,12 +15,12 @@
         :id="node.id"
 
         :class="getNodeClasses(node)"
-
+        :style="(node as any).style || (node as any).cssStyle || ''"
         @click="handleNodeClick(node.id, node)"
 
       >
 
-        {{ node.label || node.id }}
+        {{ (node as any).text || (node as any).label || node.id }}
 
       </div>
 

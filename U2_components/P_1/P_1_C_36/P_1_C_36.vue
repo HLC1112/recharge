@@ -34,14 +34,35 @@ const { componentStyle } = useComponentStyles(props);
 const { tag, containerClasses, textContent } = useContainer(props);
 
 // 根据parentComponentId过滤节点，如果没有parentComponentId则回退到类型匹配
-const nodesForC37 = computed(() => props.nodes.filter(n => {
-  const parentId = (n as any).parentComponentId;
-  return parentId === 'P_1_C_37' || (!parentId && n.type === 'httpevent');
-}));
-const nodesForC38 = computed(() => props.nodes.filter(n => {
-  const parentId = (n as any).parentComponentId;
-  return parentId === 'P_1_C_38' || (!parentId && n.type === 'beinfra');
-}));
+const nodesForC37 = computed(() => {
+  const filtered = props.nodes.filter(n => {
+    const parentId = (n as any).parentComponentId;
+    return parentId === 'P_1_C_37' || (!parentId && n.type === 'httpevent');
+  });
+  console.log(`[P_1_C_36] nodesForC37: 输入 ${props.nodes.length} 个节点, 过滤后 ${filtered.length} 个节点`);
+  return filtered;
+});
+const nodesForC38 = computed(() => {
+  const filtered = props.nodes.filter(n => {
+    const parentId = (n as any).parentComponentId;
+    const matched = parentId === 'P_1_C_38' || (!parentId && n.type === 'beinfra');
+    if (n.id === 'BE_APIGateway') {
+      console.log(`[P_1_C_36] BE_APIGateway 节点检查:`, {
+        id: n.id,
+        parentId,
+        type: n.type,
+        matched,
+        allProps: n
+      });
+    }
+    return matched;
+  });
+  console.log(`[P_1_C_36] nodesForC38: 输入 ${props.nodes.length} 个节点, 过滤后 ${filtered.length} 个节点`);
+  if (filtered.length > 0) {
+    console.log(`[P_1_C_36] nodesForC38 节点列表:`, filtered.map(n => ({ id: n.id, parentId: (n as any).parentComponentId })));
+  }
+  return filtered;
+});
 
 </script>
 

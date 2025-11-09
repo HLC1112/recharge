@@ -6,6 +6,10 @@ export interface INode {
 
   type?: string;
 
+  style?: string;
+
+  cssStyle?: string;
+
   [key: string]: any;
 
 }

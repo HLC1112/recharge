@@ -52,16 +52,8 @@ export function parseStyleSummary(styleSummary: string): Record<string, string> 
 
     // 处理特殊值
     if (cssKey === 'shape') {
-      // shape属性在CSS中需要特殊处理
-      if (value === 'cylinder') {
-        css['border-radius'] = '50% 50% 0 0 / 100% 100% 0 0';
-      } else if (value === 'diamond') {
-        css['clip-path'] = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
-      } else if (value === 'parallelogram') {
-        css['clip-path'] = 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)';
-      } else if (value === 'rectangle') {
-        // 矩形是默认形状，不需要特殊处理
-      }
+      // 忽略shape属性，所有节点都使用圆角矩形
+      // 不再处理特殊形状（菱形、平行四边形、圆柱体等）
     } else if (cssKey === 'fill' || cssKey === 'background') {
       css['background-color'] = value;
     } else if (cssKey === 'stroke') {
@@ -94,10 +86,8 @@ export function parseStyleSummary(styleSummary: string): Record<string, string> 
     css['border-radius'] = `${rxValue} ${ryValue}`;
   } else {
     // 如果没有指定rx/ry，默认添加圆角（8px）
-    // 除非是特殊形状（菱形、平行四边形、圆柱体），这些形状需要特殊处理
-    if (!css['clip-path'] && !css['transform']) {
-      css['border-radius'] = '8px';
-    }
+    // 所有节点都使用圆角矩形，不再区分特殊形状
+    css['border-radius'] = '8px';
   }
 
   return css;
@@ -109,8 +99,14 @@ export function parseStyleSummary(styleSummary: string): Record<string, string> 
  * @returns 内联样式字符串（用于Vue的:style绑定）
  */
 export function cssToInlineStyle(css: Record<string, string>): string {
-  // 确保所有节点都有圆角（除非是特殊形状）
-  if (!css['border-radius'] && !css['clip-path'] && !css['transform']) {
+  // 确保所有节点都有圆角，移除任何特殊形状的样式
+  if (css['clip-path']) {
+    delete css['clip-path'];
+  }
+  if (css['transform']) {
+    delete css['transform'];
+  }
+  if (!css['border-radius']) {
     css['border-radius'] = '8px';
   }
   
