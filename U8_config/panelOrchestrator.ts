@@ -210,10 +210,10 @@ export function usePanelOrchestrator() {
           };
           
           // 添加样式（优先使用cssStyle，如果没有则使用style）
-          if (parsedNode.cssStyle) {
-            (nodeData as any).style = parsedNode.cssStyle;
-            (nodeData as any).cssStyle = parsedNode.cssStyle;
-          }
+          // 确保所有节点都有样式，即使 cssStyle 是空字符串也要应用默认样式
+          const nodeStyle = parsedNode.cssStyle || 'border-radius: 8px';
+          (nodeData as any).style = nodeStyle;
+          (nodeData as any).cssStyle = nodeStyle;
           
           // 添加父组件和组件ID
           if (parsedNode.parentComponentId) {
@@ -246,20 +246,60 @@ export function usePanelOrchestrator() {
         if (line.startsWith('%')) return; // 跳过注释行
 
         // 处理链式连线：A --> B --> C --> D 或 A -- "label" --> B -- "label2" --> C
-        // 使用正则表达式提取所有节点ID（忽略引号中的标签）
-        const nodeIdPattern = /([A-Za-z0-9_]+)(?:\s*--\s*"[^"]*"\s*)?\s*(?:-->|--|---|-\.->)/g;
+        // 使用更可靠的方法：按箭头分割，然后提取每段中的节点ID
         const nodeIds: string[] = [];
-        let match;
         
-        // 提取所有起始节点ID
-        while ((match = nodeIdPattern.exec(line)) !== null) {
-          nodeIds.push(match[1]);
+        // 先提取所有箭头前的节点ID（包括带标签的情况）
+        // 匹配：节点ID，后面跟着可选的 -- "label" --> 或直接 -->
+        const beforeArrowPattern = /([A-Za-z0-9_]+)(?:\s*--\s*"[^"]*"\s*)?\s*(?:-->|--|---|-\.->)/g;
+        let match;
+        while ((match = beforeArrowPattern.exec(line)) !== null) {
+          if (match[1] && !nodeIds.includes(match[1])) {
+            nodeIds.push(match[1]);
+          }
         }
         
         // 提取最后一个节点ID（在最后一个箭头之后）
-        const lastMatch = line.match(/(?:-->|--|---|-\.->)\s*(?:--\s*"[^"]*"\s*)?\s*([A-Za-z0-9_]+)(?:\s*$|\s*--)/);
-        if (lastMatch) {
-          nodeIds.push(lastMatch[1]);
+        // 使用更简单的方法：找到最后一个箭头后的所有内容
+        const arrowPatterns = ['-->', '---', '-.->'];
+        let lastArrowIndex = -1;
+        let lastArrowPattern = '';
+        for (const pattern of arrowPatterns) {
+          const index = line.lastIndexOf(pattern);
+          if (index > lastArrowIndex) {
+            lastArrowIndex = index;
+            lastArrowPattern = pattern;
+          }
+        }
+        
+        if (lastArrowIndex >= 0) {
+          const afterLastArrow = line.substring(lastArrowIndex + lastArrowPattern.length).trim();
+          // 移除可能的标签（-- "label"）
+          const cleaned = afterLastArrow.replace(/--\s*"[^"]*"\s*/, '').trim();
+          const lastNodeMatch = cleaned.match(/^([A-Za-z0-9_]+)/);
+          if (lastNodeMatch && lastNodeMatch[1] && !nodeIds.includes(lastNodeMatch[1])) {
+            nodeIds.push(lastNodeMatch[1]);
+          }
+        }
+        
+        // 如果上面的方法没有提取到足够的节点，尝试更简单的方法：直接按箭头分割
+        if (nodeIds.length < 2) {
+          // 移除所有标签，只保留节点ID和箭头
+          const cleanedLine = line.replace(/--\s*"[^"]*"\s*/g, '--');
+          // 按箭头分割
+          const parts = cleanedLine.split(/(?:-->|--|---|-\.->)/);
+          nodeIds.length = 0; // 清空之前的结果
+          parts.forEach(part => {
+            const nodeMatch = part.trim().match(/^([A-Za-z0-9_]+)/);
+            if (nodeMatch && nodeMatch[1] && !nodeIds.includes(nodeMatch[1])) {
+              nodeIds.push(nodeMatch[1]);
+            }
+          });
+        }
+        
+        // 调试：输出提取的节点ID
+        if (nodeIds.length > 2) {
+          console.log(`[panelOrchestrator] 链式连线解析: ${line.substring(0, 80)}... -> 节点: [${nodeIds.join(', ')}]`);
         }
 
         // 将链式连线转换为多个单独的连线
@@ -278,57 +318,87 @@ export function usePanelOrchestrator() {
 
           // 如果找到了映射的节点，使用映射信息；否则创建新节点
           if (leftNode && !nodesMap.has(leftNode.id)) {
-            nodesMap.set(leftNode.id, {
+            const leftNodeStyle = leftNode.cssStyle || 'border-radius: 8px';
+            const leftNodeData: UINode = {
               id: leftNode.id,
               text: leftNode.label,
               type: (leftNode.type as NodeType) || 'festate',
               pos: { top: '50%', left: '50%' },
-              ...(leftNode.cssStyle && { style: leftNode.cssStyle }),
-              ...(leftNode.parentComponentId && { parentComponentId: leftNode.parentComponentId }),
-              ...(leftNode.componentId && { componentId: leftNode.componentId }),
-            });
+            };
+            (leftNodeData as any).style = leftNodeStyle;
+            (leftNodeData as any).cssStyle = leftNodeStyle;
+            if (leftNode.parentComponentId) {
+              (leftNodeData as any).parentComponentId = leftNode.parentComponentId;
+            }
+            if (leftNode.componentId) {
+              (leftNodeData as any).componentId = leftNode.componentId;
+            }
+            nodesMap.set(leftNode.id, leftNodeData);
           } else if (!leftNode && L.id && !nodesMap.has(L.id) && !nodesMap.has(L.normalizedId)) {
-            // 后备方案：根据label推断类型
-            let type: NodeType = 'festate';
-            if (/(fail|错误|异常|超时)/i.test(L.label)) type = 'fail_event';
-            else if (/^https?\b|\bpost\b|\bget\b/i.test(L.label)) type = 'httpevent';
-            else if (/event|事件中心/i.test(L.label)) type = 'bus';
-            else if (/api|网关|gateway|client|nginx|kong/i.test(L.label)) type = 'feinfra';
-            else if (/^evt[:：]/i.test(L.label)) type = 'trigger';
-            
-            nodesMap.set(L.id, {
-              id: L.id,
-              text: L.label,
-              type,
-              pos: { top: '50%', left: '50%' },
-            });
+            // 跳过容器节点（如 FE_APPFSM），它们不应该作为普通节点显示
+            if (L.id === 'FE_APPFSM' || L.id.toUpperCase() === 'FE_APPFSM') {
+              // FE_APPFSM 是容器标题，不创建为节点，但连线仍然会被创建
+            } else {
+              // 后备方案：根据label推断类型
+              let type: NodeType = 'festate';
+              if (/(fail|错误|异常|超时)/i.test(L.label)) type = 'fail_event';
+              else if (/^https?\b|\bpost\b|\bget\b/i.test(L.label)) type = 'httpevent';
+              else if (/event|事件中心/i.test(L.label)) type = 'bus';
+              else if (/api|网关|gateway|client|nginx|kong/i.test(L.label)) type = 'feinfra';
+              else if (/^evt[:：]/i.test(L.label)) type = 'trigger';
+              
+              const fallbackLeftNode: UINode = {
+                id: L.id,
+                text: L.label,
+                type,
+                pos: { top: '50%', left: '50%' },
+              };
+              (fallbackLeftNode as any).style = 'border-radius: 8px';
+              (fallbackLeftNode as any).cssStyle = 'border-radius: 8px';
+              nodesMap.set(L.id, fallbackLeftNode);
+            }
           }
 
           if (rightNode && !nodesMap.has(rightNode.id)) {
-            nodesMap.set(rightNode.id, {
+            const rightNodeStyle = rightNode.cssStyle || 'border-radius: 8px';
+            const rightNodeData: UINode = {
               id: rightNode.id,
               text: rightNode.label,
               type: (rightNode.type as NodeType) || 'festate',
               pos: { top: '50%', left: '50%' },
-              ...(rightNode.cssStyle && { style: rightNode.cssStyle }),
-              ...(rightNode.parentComponentId && { parentComponentId: rightNode.parentComponentId }),
-              ...(rightNode.componentId && { componentId: rightNode.componentId }),
-            });
+            };
+            (rightNodeData as any).style = rightNodeStyle;
+            (rightNodeData as any).cssStyle = rightNodeStyle;
+            if (rightNode.parentComponentId) {
+              (rightNodeData as any).parentComponentId = rightNode.parentComponentId;
+            }
+            if (rightNode.componentId) {
+              (rightNodeData as any).componentId = rightNode.componentId;
+            }
+            nodesMap.set(rightNode.id, rightNodeData);
           } else if (!rightNode && R.id && !nodesMap.has(R.id) && !nodesMap.has(R.normalizedId)) {
-            // 后备方案
-            let type: NodeType = 'festate';
-            if (/(fail|错误|异常|超时)/i.test(R.label)) type = 'fail_event';
-            else if (/^https?\b|\bpost\b|\bget\b/i.test(R.label)) type = 'httpevent';
-            else if (/event|事件中心/i.test(R.label)) type = 'bus';
-            else if (/api|网关|gateway|client|nginx|kong/i.test(R.label)) type = 'feinfra';
-            else if (/^evt[:：]/i.test(R.label)) type = 'trigger';
-            
-            nodesMap.set(R.id, {
-              id: R.id,
-              text: R.label,
-              type,
-              pos: { top: '50%', left: '50%' },
-            });
+            // 跳过容器节点（如 FE_APPFSM），它们不应该作为普通节点显示
+            if (R.id === 'FE_APPFSM' || R.id.toUpperCase() === 'FE_APPFSM') {
+              // FE_APPFSM 是容器标题，不创建为节点，但连线仍然会被创建
+            } else {
+              // 后备方案
+              let type: NodeType = 'festate';
+              if (/(fail|错误|异常|超时)/i.test(R.label)) type = 'fail_event';
+              else if (/^https?\b|\bpost\b|\bget\b/i.test(R.label)) type = 'httpevent';
+              else if (/event|事件中心/i.test(R.label)) type = 'bus';
+              else if (/api|网关|gateway|client|nginx|kong/i.test(R.label)) type = 'feinfra';
+              else if (/^evt[:：]/i.test(R.label)) type = 'trigger';
+              
+              const fallbackRightNode: UINode = {
+                id: R.id,
+                text: R.label,
+                type,
+                pos: { top: '50%', left: '50%' },
+              };
+              (fallbackRightNode as any).style = 'border-radius: 8px';
+              (fallbackRightNode as any).cssStyle = 'border-radius: 8px';
+              nodesMap.set(R.id, fallbackRightNode);
+            }
           }
 
           // 添加连线（使用原始ID）

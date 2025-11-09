@@ -21,9 +21,29 @@ export function useSvgCanvas(props: IProps) {
 
 
 export function findNodeElement(nodeId: string): HTMLElement | null {
-
-  return document.getElementById(nodeId);
-
+  // 首先尝试直接查找节点
+  let element = document.getElementById(nodeId);
+  
+  // 如果找不到，且节点ID是容器节点（如 FE_APPFSM），尝试查找对应的容器元素
+  if (!element) {
+    if (nodeId === 'FE_APPFSM' || nodeId.toUpperCase() === 'FE_APPFSM') {
+      // FE_APPFSM 对应 P_1_C_27 容器
+      // 首先尝试通过 data-container-id 查找
+      const container = document.querySelector(`[data-container-id="${nodeId}"]`) ||
+                       document.querySelector(`[id="${nodeId}"]`) ||
+                       // 如果还是找不到，尝试查找包含 "FE_APPFSM" 文本的元素
+                       Array.from(document.querySelectorAll('*')).find(el => 
+                         el.textContent?.includes('FE_APPFSM') && 
+                         (el as HTMLElement).offsetWidth > 0 && 
+                         (el as HTMLElement).offsetHeight > 0
+                       ) as HTMLElement | null;
+      if (container) {
+        return container as HTMLElement;
+      }
+    }
+  }
+  
+  return element;
 }
 
 

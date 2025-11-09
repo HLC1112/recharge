@@ -83,10 +83,13 @@ export function parseMmdNodeDefinition(line: string): ParsedNode | null {
   // 使用映射表中的显示文本，如果没有则使用解析出的label
   const displayText = rule?.displayText || label;
   
-  // 转换样式
-  let cssStyle = '';
-  if (rule?.styleSummary) {
-    cssStyle = styleSummaryToInlineStyle(rule.styleSummary);
+  // 所有节点都使用默认样式（忽略映射表中的样式）
+  // 只应用圆角边框等默认样式
+  let cssStyle = styleSummaryToInlineStyle('');
+  
+  // 确保 cssStyle 不为空
+  if (!cssStyle || cssStyle.trim() === '') {
+    cssStyle = 'border-radius: 8px';
   }
 
   return {

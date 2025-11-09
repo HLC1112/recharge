@@ -1,6 +1,6 @@
 <template>
 
-  <div :style="componentStyle" :class="containerClasses">
+  <div :style="componentStyle" :class="containerClasses" id="FE_APPFSM" data-container-id="FE_APPFSM">
 
     <span class="plane-title-text">FE_APPFSM (前端主脑)</span>
 

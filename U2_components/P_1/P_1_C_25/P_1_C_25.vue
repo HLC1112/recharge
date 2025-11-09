@@ -84,11 +84,22 @@ const nodesForC26 = computed(() => {
   return filtered;
 });
 
-const nodesForC27 = computed(() => props.nodes.filter(n => {
-  const parentId = (n as any).parentComponentId;
-  return parentId === 'P_1_C_27' ||
-    (!parentId && ['fsmbrain', 'festate', 'endstate', 'blockstate'].includes(n.type));
-}));
+const nodesForC27 = computed(() => {
+  const filtered = props.nodes.filter(n => {
+    // 排除 FE_APPFSM 节点，因为它只是容器标题，不应该作为普通节点显示
+    if (n.id === 'FE_APPFSM' || n.id.toUpperCase() === 'FE_APPFSM') {
+      return false;
+    }
+    const parentId = (n as any).parentComponentId;
+    return parentId === 'P_1_C_27' ||
+      (!parentId && ['fsmbrain', 'festate', 'endstate', 'blockstate'].includes(n.type));
+  });
+  console.log(`[P_1_C_25] nodesForC27: 输入 ${props.nodes.length} 个节点, 过滤后 ${filtered.length} 个节点`);
+  if (filtered.length > 0) {
+    console.log(`[P_1_C_25] nodesForC27 节点列表:`, filtered.map(n => ({ id: n.id, parentComponentId: (n as any).parentComponentId })));
+  }
+  return filtered;
+});
 
 const nodesForC28 = computed(() => props.nodes.filter(n => {
   const parentId = (n as any).parentComponentId;

@@ -110,7 +110,7 @@ export function cssToInlineStyle(css: Record<string, string>): string {
     css['border-radius'] = '8px';
   }
   
-  return Object.entries(css)
+  const styleString = Object.entries(css)
     .map(([key, value]) => {
       // Vue的内联样式可以使用kebab-case（带引号）或camelCase
       // 为了兼容性，我们使用kebab-case（带引号）
@@ -118,6 +118,9 @@ export function cssToInlineStyle(css: Record<string, string>): string {
       return `${kebabKey}: ${value}`;
     })
     .join('; ');
+  
+  // 确保总是返回至少包含 border-radius 的样式
+  return styleString || 'border-radius: 8px';
 }
 
 /**
