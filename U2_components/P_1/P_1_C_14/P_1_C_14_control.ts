@@ -26,10 +26,8 @@ export function useControl(props: IProps, emit: any) {
     console[lv](`${prefix} ${msg}`)
   }
 
-  const handleFileChange = async (e: Event) => {
-    const input = e.target as HTMLInputElement | null
-    const file = input?.files?.[0]
-
+  // 处理文件的内部函数
+  const processFile = async (file: File) => {
     if (!file) {
       log('未选择文件，清空状态。', 'warn')
       hasFile.value = false
@@ -59,8 +57,28 @@ export function useControl(props: IProps, emit: any) {
       hasFile.value = false
       fileContent.value = ''
     } finally {
-      if (input) input.value = ''     // 允许同名文件重复选择，强制触发 change
       console.log('[P1C14] FINALLY done, hasFile=', hasFile.value)
+    }
+  }
+
+  const handleFileChange = async (e: Event | { target: { files: File[] | FileList | null } }) => {
+    const input = (e.target as HTMLInputElement | { files: File[] | FileList | null }) || null
+    const files = input?.files
+    const file = files?.[0] || (Array.isArray(files) ? files[0] : null)
+
+    if (!file) {
+      log('未选择文件，清空状态。', 'warn')
+      hasFile.value = false
+      fileName.value = ''
+      fileContent.value = ''
+      return
+    }
+
+    await processFile(file as File)
+    
+    // 如果是真实的 input 元素，清空其值以允许重复选择
+    if (input && 'value' in input && typeof (input as HTMLInputElement).value !== 'undefined') {
+      (input as HTMLInputElement).value = ''
     }
   }
 
@@ -78,8 +96,13 @@ export function useControl(props: IProps, emit: any) {
     handleClose()
   }
 
+  // 直接处理文件对象的函数（用于 File System Access API）
+  const handleFileDirect = async (file: File) => {
+    await processFile(file)
+  }
+
   return {
     fileName, fileContent, previewVisible, loadButtonDisabled,
-    handleFileChange, handleClose, handleLoadModule,
+    handleFileChange, handleFileDirect, handleClose, handleLoadModule,
   }
 }
