@@ -56,9 +56,11 @@
           <div class="mmd-actions">
             <button
               class="mmd-btn mmd-btn-primary"
-              type="submit"
-              :disabled="loadButtonDisabled" aria-label="加载模块"
+              type="button"
+              :disabled="loadButtonDisabled"
+              aria-label="加载模块"
               title="加载模块"
+              @click="handleLoadModule"
             >
               加载模块
             </button>

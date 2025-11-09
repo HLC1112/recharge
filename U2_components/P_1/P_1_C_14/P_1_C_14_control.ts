@@ -90,8 +90,17 @@ export function useControl(props: IProps, emit: any) {
   const handleClose = () => { emit('update:visible', false); clearState(); log('CLOSE modal') }
 
   const handleLoadModule = () => {
-    if (!hasFile.value) { log('SKIP load: empty content'); return }
-    log('EMIT load-module')
+    log('handleLoadModule 被调用')
+    log(`当前状态: hasFile=${hasFile.value}, fileContent.length=${fileContent.value.length}`)
+    if (!hasFile.value) { 
+      log('SKIP load: empty content', 'warn')
+      return 
+    }
+    if (!fileContent.value || fileContent.value.length === 0) {
+      log('SKIP load: fileContent is empty', 'warn')
+      return
+    }
+    log(`EMIT load-module, content length: ${fileContent.value.length}`)
     emit('load-module', { content: fileContent.value })
     handleClose()
   }
