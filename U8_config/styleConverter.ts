@@ -92,6 +92,12 @@ export function parseStyleSummary(styleSummary: string): Record<string, string> 
     const rxValue = rx.includes('px') ? rx : (rx ? `${rx}px` : '0px');
     const ryValue = ry.includes('px') ? ry : (ry ? `${ry}px` : '0px');
     css['border-radius'] = `${rxValue} ${ryValue}`;
+  } else {
+    // 如果没有指定rx/ry，默认添加圆角（8px）
+    // 除非是特殊形状（菱形、平行四边形、圆柱体），这些形状需要特殊处理
+    if (!css['clip-path'] && !css['transform']) {
+      css['border-radius'] = '8px';
+    }
   }
 
   return css;
@@ -103,6 +109,11 @@ export function parseStyleSummary(styleSummary: string): Record<string, string> 
  * @returns 内联样式字符串（用于Vue的:style绑定）
  */
 export function cssToInlineStyle(css: Record<string, string>): string {
+  // 确保所有节点都有圆角（除非是特殊形状）
+  if (!css['border-radius'] && !css['clip-path'] && !css['transform']) {
+    css['border-radius'] = '8px';
+  }
+  
   return Object.entries(css)
     .map(([key, value]) => {
       // Vue的内联样式可以使用kebab-case（带引号）或camelCase

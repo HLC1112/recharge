@@ -80,7 +80,7 @@ body {
   margin: 6px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(129,255,238,.25);
-  border-radius: 10px;
+  border-radius: 8px !important; /* 确保所有节点都有圆角 */
   padding: 8px 10px;
   min-height: 40px;
 }
@@ -91,6 +91,43 @@ body {
 .festate   { border-color: #00e5ff; }
 .endstate  { border-color: #c3ff00; }
 .blockstate{ border-color: #ff8a80; }
+
+/* 节点高亮样式（亮状态） */
+.node.highlighted {
+  background: rgba(255, 255, 0, 0.2) !important;
+  border-color: #ffff00 !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+}
+
+/* SVG 画布样式 */
+.svg-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 连线样式 */
+.link-default {
+  stroke: #999;
+  stroke-width: 2;
+  fill: none;
+}
+
+.link-highlighted {
+  stroke: #ffff00;
+  stroke-width: 3;
+  fill: none;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 0, 0.8));
+}
+
+.link-hidden {
+  display: none;
+}
 
 /* 12 栏宽度（不使用 calc/minmax/变量/函数） */
 .col-1  { width: 8.3333%; }

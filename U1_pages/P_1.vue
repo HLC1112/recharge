@@ -17,15 +17,15 @@
       <P_1_C_24
         :nodes="orchestrator.nodes"
         :links="orchestrator.links"
-        :highlighted-nodes="[orchestrator.activeNodeId, orchestrator.errorNodeId].filter(Boolean)"
-        :highlighted-links="[orchestrator.activeEdge, orchestrator.errorEdge].filter(Boolean)"
+        :highlighted-nodes="[orchestrator.activeNodeId, orchestrator.errorNodeId].filter((id): id is string => Boolean(id))"
+        :highlighted-links="[orchestrator.activeEdge, orchestrator.errorEdge].filter((id): id is string => Boolean(id))"
         @node-click="onNodeClick"
       />
 
       <P_1_C_46
-              :nodes="orchestrator.nodes"  :links="orchestrator.links"
-              :active-edge="orchestrator.activeEdge"
-              :error-edge="orchestrator.errorEdge"
+              :nodes="orchestrator.nodes"
+              :links="orchestrator.links.map(l => ({ id: `edge-${l.from}-to-${l.to}`, source: l.from, target: l.to }))"
+              :highlighted-links="[orchestrator.activeEdge, orchestrator.errorEdge].filter((id): id is string => Boolean(id))"
             />
     </div>
 
@@ -41,15 +41,21 @@
 <script setup lang="ts">
 import P_1_C_24 from '../U2_components/P_1/P_1_C_24/P_1_C_24.vue'
 import P_1_C_46 from '../U2_components/P_1/P_1_C_46/P_1_C_46.vue'
-import P_1_C_6  from '@/U2_components/P_1/P_1_C_6/P_1_C_6.vue'
+import P_1_C_6  from '../U2_components/P_1/P_1_C_6/P_1_C_6.vue'
 import P_1_C_14 from '../U2_components/P_1/P_1_C_14/P_1_C_14.vue'
 
 import { useP1Page } from '../U7_utils/useP1Page'
+import { watch } from 'vue'
 
 const {
   showFileDialog, isTracing, traceId, orchestrator,
   onNodeClick, handleStartTrace, handleLoadModule, openModuleDialog, onUpdateTraceId,
 } = useP1Page()
+
+// 调试：监听 orchestrator.ready 的变化
+watch(() => orchestrator.ready, (newVal) => {
+  console.log(`[P_1] orchestrator.ready 更新: ${newVal}`);
+}, { immediate: true })
 </script>
 
 <style scoped>

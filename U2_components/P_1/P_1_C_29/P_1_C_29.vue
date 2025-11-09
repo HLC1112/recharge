@@ -69,3 +69,25 @@ const { containerClasses } = useContainer(props);
 const { handleNodeClick, renderedNodes } = useControl(props, emit);
 
 </script>
+
+<style scoped>
+.plane-title-text {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  color: #8ef9f3;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.node-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 32px;
+  width: 100%;
+  height: 100%;
+  align-content: flex-start;
+}
+</style>

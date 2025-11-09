@@ -112,6 +112,10 @@ export function usePanelOrchestrator() {
   // ⭐ 解析 Mermaid（graph TD/LR；A-->B / A---B / A-.->B 等），生成 nodes/links 并重绘
   function loadModule(mermaidText: string) {
     try {
+      // 加载开始时，先重置 ready 状态，确保按钮在加载过程中保持禁用
+      state.ready = false;
+      console.log('[panelOrchestrator] loadModule 开始，重置 ready = false');
+      
       const text = (mermaidText || '').replace(/\r\n/g, '\n');
 
       // 允许没有显式 graph 行，但有的话给个提示
@@ -381,6 +385,7 @@ export function usePanelOrchestrator() {
       state.ready = true;
       
       console.log(`[panelOrchestrator] 更新后 state.nodes.length = ${state.nodes.length}`);
+      console.log(`[panelOrchestrator] 更新后 state.ready = ${state.ready}`);
       console.log(`[panelOrchestrator] 更新后 state.nodes[0] =`, state.nodes[0] ? {
         id: state.nodes[0].id,
         text: state.nodes[0].text,
@@ -407,10 +412,70 @@ export function usePanelOrchestrator() {
   function startTrace(kind: 'success' | 'error') {
     if (!state.ready) { addLog('请先加载模块。', 'warn'); return; }
     clearTrace();
-    const seq = kind === 'success' ? successPath : errorPath;
+    
+    // 根据实际解析出的节点和连线动态生成追踪路径
+    // 从第一个节点开始，沿着连线找到一条路径
+    const nodeIds = state.nodes.map(n => n.id);
+    const linkMap = new Map<string, string[]>(); // from -> [to1, to2, ...]
+    
+    state.links.forEach(link => {
+      if (!linkMap.has(link.from)) {
+        linkMap.set(link.from, []);
+      }
+      linkMap.get(link.from)!.push(link.to);
+    });
+    
+    // 找到起始节点（通常是 trigger 类型或第一个节点）
+    let startNode = nodeIds.find(id => {
+      const node = state.nodes.find(n => n.id === id);
+      return node?.type === 'trigger' || id.toUpperCase().includes('TRIGGER');
+    }) || nodeIds[0];
+    
+    if (!startNode) {
+      addLog('未找到起始节点，无法开始追踪', 'warn');
+      return;
+    }
+    
+    // 构建追踪路径（沿着连线找到一条路径，最多10个节点）
+    const seq: string[] = [startNode];
+    let current = startNode;
+    let maxSteps = 10;
+    
+    while (maxSteps > 0 && linkMap.has(current)) {
+      const targets = linkMap.get(current)!;
+      if (targets.length === 0) break;
+      
+      // 优先选择成功路径（非 fail_event 类型），如果是错误追踪则选择 fail_event
+      let next: string | null = null;
+      if (kind === 'error') {
+        next = targets.find(t => {
+          const node = state.nodes.find(n => n.id === t);
+          return node?.type === 'fail_event' || t.toUpperCase().includes('FAIL') || t.toUpperCase().includes('ERROR');
+        }) || targets[0];
+      } else {
+        next = targets.find(t => {
+          const node = state.nodes.find(n => n.id === t);
+          return node?.type !== 'fail_event' && !t.toUpperCase().includes('FAIL') && !t.toUpperCase().includes('ERROR');
+        }) || targets[0];
+      }
+      
+      if (next && !seq.includes(next)) {
+        seq.push(next);
+        current = next;
+      } else {
+        break;
+      }
+      maxSteps--;
+    }
+    
+    if (seq.length === 0) {
+      addLog('无法生成追踪路径', 'warn');
+      return;
+    }
+    
+    addLog(`--- 开始 ${kind === 'success' ? '成功' : '故障'} 追踪，路径: ${seq.join(' -> ')} ---`, kind === 'success' ? 'success' : 'error');
+    
     let step = 0;
-    addLog(`--- 开始 ${kind === 'success' ? '成功' : '故障'} 追踪 ---`, kind === 'success' ? 'success' : 'error');
-
     timer.value = window.setInterval(() => {
       if (step >= seq.length) {
         addLog(`--- 追踪${kind === 'success' ? '成功完成' : '失败'} ---`, kind === 'success' ? 'success' : 'error');
@@ -422,9 +487,13 @@ export function usePanelOrchestrator() {
       const prevId = step > 0 ? seq[step-1] : null;
 
       state.activeNodeId = nodeId;
-      state.errorNodeId = (kind === 'error' && nodeId === 'P_1_E_108') ? nodeId : null;
+      
+      // 检查是否是错误节点
+      const currentNode = state.nodes.find(n => n.id === nodeId);
+      state.errorNodeId = (kind === 'error' && currentNode && (currentNode.type === 'fail_event' || nodeId.toUpperCase().includes('FAIL') || nodeId.toUpperCase().includes('ERROR'))) ? nodeId : null;
+      
       state.activeEdge = prevId ? makeEdgeId(prevId, nodeId) : null;
-      state.errorEdge = (kind === 'error' && nodeId === 'P_1_E_108' && prevId) ? makeEdgeId(prevId, nodeId) : null;
+      state.errorEdge = (kind === 'error' && state.errorNodeId && prevId) ? makeEdgeId(prevId, nodeId) : null;
 
       step++;
     }, 600);
@@ -435,8 +504,19 @@ export function usePanelOrchestrator() {
   }
 
   return {
-    // 状态
-    ...state,
+    // 状态 - 直接返回 state 对象以保持响应式
+    state,
+    // 为了兼容性，也提供直接访问
+    get nodes() { return state.nodes; },
+    get links() { return state.links; },
+    get ready() { return state.ready; },
+    get sidePanelOpen() { return state.sidePanelOpen; },
+    get logs() { return state.logs; },
+    get activeNodeId() { return state.activeNodeId; },
+    get errorNodeId() { return state.errorNodeId; },
+    get activeEdge() { return state.activeEdge; },
+    get errorEdge() { return state.errorEdge; },
+    get modals() { return state.modals; },
     // 日志/控制
     addLog, loadDemoModule, loadModule, startTrace, traceById,
   };

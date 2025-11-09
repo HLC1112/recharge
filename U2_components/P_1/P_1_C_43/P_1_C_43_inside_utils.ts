@@ -8,7 +8,7 @@ export function useContainer(props: IProps) {
 
   const containerClasses = computed(() => {
 
-    return ['col-span-3', 'row-span-1', 'plane-sub'];
+    return []; // 移除 plane-sub，因为父容器已经有了边框
 
   });
 

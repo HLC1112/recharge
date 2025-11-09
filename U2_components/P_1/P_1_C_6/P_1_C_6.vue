@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, watch } from 'vue';
 import { IProps } from './P_1_C_6_inside_Obj';
 import { useControl } from './P_1_C_6_control';
 import { useComponentStyles } from './P_1_C_6_inside_UI';
@@ -28,6 +28,11 @@ import P_1_C_13 from '../P_1_C_13/P_1_C_13.vue';
 
 const props = defineProps<IProps>();
 const emit = defineEmits(['update:traceId', 'start-trace', 'open-module-loader']);
+
+// 调试：监听 moduleReady 的变化
+watch(() => props.moduleReady, (newVal) => {
+  console.log(`[P_1_C_6] props.moduleReady 更新: ${newVal}`);
+}, { immediate: true });
 
 const { onPickModule, onRunSuccessFlow, onRunFailureFlow, onTraceById, onTraceIdInput } = useControl(props, emit);
 const { componentStyle } = useComponentStyles(props);

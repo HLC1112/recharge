@@ -8,7 +8,11 @@ export function useComponentStyles(props: IProps) {
 
   const componentStyle = reactive<CSSProperties>({
 
-    position: 'absolute',
+    position: 'relative',
+
+    width: '100%',
+
+    height: '100%',
 
     zIndex: 3,
 
