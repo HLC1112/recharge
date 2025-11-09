@@ -1,5 +1,6 @@
 // 文件：U8_config/panelOrchestrator.ts
 import { reactive, ref, nextTick } from 'vue';
+import { parseMmdNodes, groupNodesByParentComponent, type ParsedNode } from './mmdParser';
 
 type NodeType =
   | 'trigger' | 'festate' | 'endstate' | 'blockstate'
@@ -12,6 +13,9 @@ interface UINode {
   text: string;
   type: NodeType;
   pos: { top: string; left: string; };
+  style?: string; // CSS内联样式
+  parentComponentId?: string; // 父容器组件ID
+  componentId?: string; // 组件ID
 }
 
 interface LinkDef { from: string; to: string; }
@@ -111,73 +115,247 @@ export function usePanelOrchestrator() {
       const text = (mermaidText || '').replace(/\r\n/g, '\n');
 
       // 允许没有显式 graph 行，但有的话给个提示
-      if (!/^\s*graph\s+/im.test(text)) {
-        addLog('未检测到合法的 Mermaid 图(缺少 "graph" 开头)；尝试宽松解析。', 'warn');
+      if (!/^\s*(graph|flowchart)\s+/im.test(text)) {
+        addLog('未检测到合法的 Mermaid 图(缺少 "graph" 或 "flowchart" 开头)；尝试宽松解析。', 'warn');
       }
 
-      // 匹配一行里的 A --> B / A---B / A-.->B
-      const edgeLineRe = /^\s*(.+?)\s*(?:---|-->|-\.\->)\s*(.+?)\s*$/;
+      // 1. 首先解析所有节点定义（使用映射表）
+      console.log('[panelOrchestrator] 开始解析节点...');
+      const parsedNodes = parseMmdNodes(text);
+      console.log(`[panelOrchestrator] parseMmdNodes 返回 ${parsedNodes.length} 个节点`);
+      
+      const parsedNodesMap = new Map<string, ParsedNode>();
+      parsedNodes.forEach(node => {
+        parsedNodesMap.set(node.id, node);
+        // 同时建立小写ID的映射（用于连线解析时的匹配）
+        parsedNodesMap.set(node.id.toLowerCase(), node);
+      });
 
-      // 只在包含 '->' 的行上尝试，能大幅降低误匹配
+      addLog(`从节点定义中解析到 ${parsedNodes.length} 个节点`, 'info');
+      if (parsedNodes.length > 0) {
+        const sampleNodes = parsedNodes.slice(0, 5).map(n => `${n.id}(${n.type || 'no-type'})`).join(', ');
+        addLog(`示例节点: ${sampleNodes}${parsedNodes.length > 5 ? '...' : ''}`, 'info');
+        
+        // 检查示例节点的parentComponentId
+        const sampleWithParent = parsedNodes.find(n => n.parentComponentId);
+        if (sampleWithParent) {
+          addLog(`示例节点映射: ${sampleWithParent.id} -> parentComponentId: ${sampleWithParent.parentComponentId}`, 'info');
+        }
+      }
+
       const nodesMap = new Map<string, UINode>();
       const links: LinkDef[] = [];
 
+      // 映射样式类名到节点类型（用于没有映射表的节点）
+      const styleClassToType: Record<string, NodeType> = {
+        'trigger': 'trigger',
+        'festate': 'festate',
+        'endstate': 'endstate',
+        'blockstate': 'blockstate',
+        'fsmbrain': 'fsmbrain',
+        'feinfra': 'feinfra',
+        'ufstore': 'ufstore',
+        'uistore': 'uistore',
+        'cache': 'cache',
+        'appevent': 'appevent',
+        'httpevent': 'httpevent',
+        'fsm_state': 'fsm_state',
+        'da_orchestrator': 'da_orchestrator',
+        'dsv': 'dsv',
+        'db_component': 'db_component',
+        'bus': 'bus',
+        'fail_event': 'fail_event',
+        'maintaskevent': 'fail_event',
+        'beinfra': 'feinfra',
+      };
+
+      // 解析连线：A --> B / A---B / A-.->B / A -- "label" --> B
+      // 参考源代码，支持多种连线格式
+      const edgePatterns = [
+        /^\s*([A-Za-z0-9_]+)\s*-->\s*([A-Za-z0-9_]+)\s*$/,  // A --> B
+        /^\s*([A-Za-z0-9_]+)\s*--\s*"[^"]*"\s*-->\s*([A-Za-z0-9_]+)\s*$/,  // A -- "label" --> B
+        /^\s*([A-Za-z0-9_]+)\s*--\s*"[^"]*"\s*-->\s*([A-Za-z0-9_]+)\s*--\s*"[^"]*"\s*-->\s*([A-Za-z0-9_]+)/,  // 链式连线
+        /^\s*([A-Za-z0-9_]+)\s*---\s*([A-Za-z0-9_]+)\s*$/,  // A --- B
+        /^\s*([A-Za-z0-9_]+)\s*-\\.->\s*([A-Za-z0-9_]+)\s*$/,  // A -.-> B
+      ];
+
       const parseToken = (raw: string) => {
-        // 例如 A["前端 API"]   A[前端]   "开始节点"   开始 节点
-        const baseMatch = raw.match(/^[A-Za-z0-9_\-]+/);
+        // 提取节点ID（去除引号和标签）
+        const baseMatch = raw.match(/^[A-Za-z0-9_]+/);
         const base = baseMatch?.[0];
-
         const label = toLabel(raw);
-        const id = toId(base || label);
-
+        // 尝试匹配原始ID（保持大小写）
+        const originalId = base || label;
+        const normalizedId = toId(originalId);
         return {
-          id: id || toId(label), // 兜底
+          id: originalId, // 保持原始ID
+          normalizedId, // 规范化ID（小写）
           label,
         };
       };
 
-      const pushNodeIfAbsent = (id: string, label: string) => {
-        if (!id) return;
-        if (!nodesMap.has(id)) {
-          // 根据 label 关键词做一个非常轻量的类型推断（可按需加）
-          let type: NodeType = 'festate';
-          const low = label.toLowerCase();
-          if (/(fail|错误|异常|超时)/i.test(label)) type = 'fail_event';
-          else if (/^https?\b|\bpost\b|\bget\b/i.test(label)) type = 'httpevent';
-          else if (/event|事件中心/i.test(label)) type = 'bus';
-          else if (/api|网关|gateway|client|nginx|kong/i.test(label)) type = 'feinfra';
-          else if (/^evt[:：]/i.test(label)) type = 'trigger';
-          nodesMap.set(id, {
-            id,
-            text: label,
-            type,
-            pos: { top: '50%', left: '50%' }, // 初始先占位，后面统一布局
-          });
-        }
-      };
-
-      text.split('\n').forEach(rawLine => {
-        const line = rawLine.trim();
-        if (!line || !line.includes('->')) return;
-
-        const m = line.match(edgeLineRe);
-        if (!m) return;
-
-        const leftRaw = m[1];
-        const rightRaw = m[2];
-
-        const L = parseToken(leftRaw);
-        const R = parseToken(rightRaw);
-
-        if (L.id && R.id) {
-          pushNodeIfAbsent(L.id, L.label);
-          pushNodeIfAbsent(R.id, R.label);
-          links.push({ from: L.id, to: R.id });
+      // 将解析出的节点添加到nodesMap
+      parsedNodes.forEach(parsedNode => {
+        const normalizedId = toId(parsedNode.id);
+        if (!nodesMap.has(normalizedId) && !nodesMap.has(parsedNode.id)) {
+          const nodeData: UINode = {
+            id: parsedNode.id, // 保持原始ID
+            text: parsedNode.label,
+            type: (parsedNode.type as NodeType) || 'festate',
+            pos: { top: '50%', left: '50%' },
+          };
+          
+          // 添加样式（优先使用cssStyle，如果没有则使用style）
+          if (parsedNode.cssStyle) {
+            (nodeData as any).style = parsedNode.cssStyle;
+            (nodeData as any).cssStyle = parsedNode.cssStyle;
+          }
+          
+          // 添加父组件和组件ID
+          if (parsedNode.parentComponentId) {
+            (nodeData as any).parentComponentId = parsedNode.parentComponentId;
+          }
+          if (parsedNode.componentId) {
+            (nodeData as any).componentId = parsedNode.componentId;
+          }
+          
+          nodesMap.set(parsedNode.id, nodeData);
+          
+          // 调试：输出前几个节点的样式信息
+          if (nodesMap.size <= 3) {
+            console.log(`[panelOrchestrator] 添加节点 ${parsedNode.id}:`, {
+              text: parsedNode.label,
+              cssStyle: parsedNode.cssStyle,
+              parentComponentId: parsedNode.parentComponentId
+            });
+          }
         }
       });
 
-      if (links.length === 0 && nodesMap.size === 0) {
-        throw new Error('未从 Mermaid 文本中解析到任何节点或连线。');
+      // 2. 解析连线（从连线中可能发现新的节点）
+      // 参考源代码，支持链式连线（A --> B --> C）
+      text.split('\n').forEach(rawLine => {
+        const line = rawLine.trim();
+        if (!line || !line.includes('->')) return;
+        if (line.startsWith('%')) return; // 跳过注释行
+
+        // 处理链式连线：A --> B --> C --> D 或 A -- "label" --> B -- "label2" --> C
+        // 使用正则表达式提取所有节点ID（忽略引号中的标签）
+        const nodeIdPattern = /([A-Za-z0-9_]+)(?:\s*--\s*"[^"]*"\s*)?\s*(?:-->|--|---|-\.->)/g;
+        const nodeIds: string[] = [];
+        let match;
+        
+        // 提取所有起始节点ID
+        while ((match = nodeIdPattern.exec(line)) !== null) {
+          nodeIds.push(match[1]);
+        }
+        
+        // 提取最后一个节点ID（在最后一个箭头之后）
+        const lastMatch = line.match(/(?:-->|--|---|-\.->)\s*(?:--\s*"[^"]*"\s*)?\s*([A-Za-z0-9_]+)(?:\s*$|\s*--)/);
+        if (lastMatch) {
+          nodeIds.push(lastMatch[1]);
+        }
+
+        // 将链式连线转换为多个单独的连线
+        for (let i = 0; i < nodeIds.length - 1; i++) {
+          const fromId = nodeIds[i];
+          const targetId = nodeIds[i + 1];
+          
+          if (!fromId || !targetId) continue;
+
+          const L = { id: fromId, normalizedId: toId(fromId), label: fromId };
+          const R = { id: targetId, normalizedId: toId(targetId), label: targetId };
+
+          // 尝试从映射表中查找节点
+          const leftNode = parsedNodesMap.get(L.id) || parsedNodesMap.get(L.normalizedId);
+          const rightNode = parsedNodesMap.get(R.id) || parsedNodesMap.get(R.normalizedId);
+
+          // 如果找到了映射的节点，使用映射信息；否则创建新节点
+          if (leftNode && !nodesMap.has(leftNode.id)) {
+            nodesMap.set(leftNode.id, {
+              id: leftNode.id,
+              text: leftNode.label,
+              type: (leftNode.type as NodeType) || 'festate',
+              pos: { top: '50%', left: '50%' },
+              ...(leftNode.cssStyle && { style: leftNode.cssStyle }),
+              ...(leftNode.parentComponentId && { parentComponentId: leftNode.parentComponentId }),
+              ...(leftNode.componentId && { componentId: leftNode.componentId }),
+            });
+          } else if (!leftNode && L.id && !nodesMap.has(L.id) && !nodesMap.has(L.normalizedId)) {
+            // 后备方案：根据label推断类型
+            let type: NodeType = 'festate';
+            if (/(fail|错误|异常|超时)/i.test(L.label)) type = 'fail_event';
+            else if (/^https?\b|\bpost\b|\bget\b/i.test(L.label)) type = 'httpevent';
+            else if (/event|事件中心/i.test(L.label)) type = 'bus';
+            else if (/api|网关|gateway|client|nginx|kong/i.test(L.label)) type = 'feinfra';
+            else if (/^evt[:：]/i.test(L.label)) type = 'trigger';
+            
+            nodesMap.set(L.id, {
+              id: L.id,
+              text: L.label,
+              type,
+              pos: { top: '50%', left: '50%' },
+            });
+          }
+
+          if (rightNode && !nodesMap.has(rightNode.id)) {
+            nodesMap.set(rightNode.id, {
+              id: rightNode.id,
+              text: rightNode.label,
+              type: (rightNode.type as NodeType) || 'festate',
+              pos: { top: '50%', left: '50%' },
+              ...(rightNode.cssStyle && { style: rightNode.cssStyle }),
+              ...(rightNode.parentComponentId && { parentComponentId: rightNode.parentComponentId }),
+              ...(rightNode.componentId && { componentId: rightNode.componentId }),
+            });
+          } else if (!rightNode && R.id && !nodesMap.has(R.id) && !nodesMap.has(R.normalizedId)) {
+            // 后备方案
+            let type: NodeType = 'festate';
+            if (/(fail|错误|异常|超时)/i.test(R.label)) type = 'fail_event';
+            else if (/^https?\b|\bpost\b|\bget\b/i.test(R.label)) type = 'httpevent';
+            else if (/event|事件中心/i.test(R.label)) type = 'bus';
+            else if (/api|网关|gateway|client|nginx|kong/i.test(R.label)) type = 'feinfra';
+            else if (/^evt[:：]/i.test(R.label)) type = 'trigger';
+            
+            nodesMap.set(R.id, {
+              id: R.id,
+              text: R.label,
+              type,
+              pos: { top: '50%', left: '50%' },
+            });
+          }
+
+          // 添加连线（使用原始ID）
+          if (L.id && R.id) {
+            links.push({ from: L.id, to: R.id });
+          }
+        }
+      });
+
+      addLog(`总共解析到 ${nodesMap.size} 个节点，${links.length} 条连线`, 'info');
+      
+      if (nodesMap.size === 0) {
+        addLog('警告：未解析到任何节点，尝试检查文件格式', 'warn');
+        const lines = text.split('\n').slice(0, 20);
+        addLog(`文件前20行示例:\n${lines.join('\n')}`, 'info');
+        throw new Error('未从 Mermaid 文本中解析到任何节点。');
+      }
+
+      // 验证节点是否包含parentComponentId
+      const nodesWithParent = Array.from(nodesMap.values()).filter(n => (n as any).parentComponentId);
+      addLog(`验证: ${nodesWithParent.length}/${nodesMap.size} 个节点包含parentComponentId`, 'info');
+      if (nodesWithParent.length > 0) {
+        const sample = nodesWithParent[0];
+        addLog(`示例节点: ${sample.id} -> parentComponentId: ${(sample as any).parentComponentId}`, 'info');
+      } else {
+        addLog('警告：没有节点包含parentComponentId，检查nodeMapping.json是否正确生成', 'warn');
+      }
+
+      // 按父组件分组节点
+      const grouped = groupNodesByParentComponent(parsedNodes);
+      const parentComponentIds = Object.keys(grouped).filter(id => id !== 'default');
+      if (parentComponentIds.length > 0) {
+        addLog(`节点已映射到 ${parentComponentIds.length} 个父组件: ${parentComponentIds.join(', ')}`, 'info');
       }
 
       // —— 简单环形布局（保持你原先的思路） ——
@@ -197,14 +375,31 @@ export function usePanelOrchestrator() {
 
       // —— 应用到界面 ——
       clearTrace();
-      state.nodes = nodes;
-      state.links = links;
+      // 使用 splice 确保 Vue 响应式更新
+      state.nodes.splice(0, state.nodes.length, ...nodes);
+      state.links.splice(0, state.links.length, ...links);
       state.ready = true;
+      
+      console.log(`[panelOrchestrator] 更新后 state.nodes.length = ${state.nodes.length}`);
+      console.log(`[panelOrchestrator] 更新后 state.nodes[0] =`, state.nodes[0] ? {
+        id: state.nodes[0].id,
+        text: state.nodes[0].text,
+        parentComponentId: (state.nodes[0] as any).parentComponentId,
+        style: (state.nodes[0] as any).style
+      } : null);
 
       addLog(`成功解析 Mermaid：节点 ${nodes.length} 个，连线 ${links.length} 条。`, 'success');
+      console.log(`[panelOrchestrator] 成功设置 state.nodes = ${nodes.length} 个节点`);
+      console.log(`[panelOrchestrator] 节点示例:`, nodes.slice(0, 3).map(n => ({ id: n.id, parentComponentId: (n as any).parentComponentId })));
+      
       nextTick(() => window.dispatchEvent(new Event('resize')));
     } catch (e: any) {
+      console.error('[panelOrchestrator] loadModule 错误:', e);
+      console.error('[panelOrchestrator] 错误堆栈:', e?.stack);
       addLog(`Mermaid 解析失败：${e?.message || e}`, 'error');
+      if (e?.stack) {
+        addLog(`错误堆栈: ${e.stack}`, 'error');
+      }
       throw e;
     }
   }

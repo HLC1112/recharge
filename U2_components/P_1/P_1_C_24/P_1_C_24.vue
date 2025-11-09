@@ -16,7 +16,7 @@
 
 <script lang="ts" setup>
 
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, watch } from 'vue';
 
 import { IProps } from './P_1_C_24_inside_Obj';
 
@@ -40,7 +40,14 @@ const props = defineProps<IProps>();
 
 const emit = defineEmits(['node-click']);
 
-
+// 调试：监听 props.nodes 的变化
+watch(() => props.nodes, (newNodes) => {
+  console.log(`[P_1_C_24] props.nodes 更新: ${newNodes?.length || 0} 个节点`);
+  if (newNodes && newNodes.length > 0) {
+    const sample = newNodes[0];
+    console.log(`[P_1_C_24] 示例节点:`, { id: sample.id, parentComponentId: (sample as any).parentComponentId, type: sample.type });
+  }
+}, { immediate: true });
 
 const { handleNodeClick } = useControl(props, emit);
 

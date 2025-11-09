@@ -69,17 +69,73 @@ const { handleClickWrapper } = useControl(props, emit);
 const { componentStyle } = useComponentStyles(props);
 const { tag, elementId, elementClasses, textContent } = useElement(props);
 
-// [修正] 按类型过滤 nodes 并分配给子组件
-const nodesForC26 = computed(() => props.nodes.filter(n => n.type === 'trigger'));
-const nodesForC27 = computed(() => props.nodes.filter(n => ['fsmbrain', 'festate', 'endstate', 'blockstate'].includes(n.type)));
-const nodesForC28 = computed(() => props.nodes.filter(n => n.id === 'fe_tsdsv')); // 基于 R1.mmd [cite: 8]
-const nodesForC29 = computed(() => props.nodes.filter(n => n.type === 'ufstore'));
-const nodesForC30 = computed(() => props.nodes.filter(n => n.type === 'uistore'));
-const nodesForC31 = computed(() => props.nodes.filter(n => n.id === 'fe_l_writer')); // 基于 R1.mmd [cite: 8]
-const nodesForC32 = computed(() => props.nodes.filter(n => n.type === 'cache'));
-const nodesForC33 = computed(() => props.nodes.filter(n => n.id === 'fe_apiclient')); // 基于 R1.mmd [cite: 8]
-const nodesForC34 = computed(() => []); // 暂无 "事件中心" 节点
-const nodesForC35 = computed(() => props.nodes.filter(n => n.type === 'appevent'));
+// 根据parentComponentId过滤节点，如果没有parentComponentId则回退到类型/ID匹配
+const nodesForC26 = computed(() => {
+  const filtered = props.nodes.filter(n => {
+    const parentId = (n as any).parentComponentId;
+    return parentId === 'P_1_C_26' ||
+      (!parentId && (n.type === 'trigger' || 
+        ['FE_TRIGGER_UI', 'FE_TRIGGER_SLOT', 'BE_Trigger'].some(id => n.id.toUpperCase() === id.toUpperCase())));
+  });
+  if (filtered.length > 0) {
+    console.log(`[P_1_C_25] nodesForC26: 输入 ${props.nodes.length} 个节点, 过滤后 ${filtered.length} 个节点`);
+    console.log(`[P_1_C_25] nodesForC26 示例:`, filtered.slice(0, 3).map(n => ({ id: n.id, parentComponentId: (n as any).parentComponentId })));
+  }
+  return filtered;
+});
+
+const nodesForC27 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_27' ||
+    (!parentId && ['fsmbrain', 'festate', 'endstate', 'blockstate'].includes(n.type));
+}));
+
+const nodesForC28 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_28' ||
+    (!parentId && (n.id.toUpperCase() === 'FE_TSDSV' || n.id === 'fe_tsdsv'));
+}));
+
+const nodesForC29 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_29' ||
+    (!parentId && n.type === 'ufstore');
+}));
+
+const nodesForC30 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_30' ||
+    (!parentId && n.type === 'uistore');
+}));
+
+const nodesForC31 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_31' ||
+    (!parentId && (n.id.toUpperCase() === 'FE_L_WRITER' || n.id === 'fe_l_writer'));
+}));
+
+const nodesForC32 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_32' ||
+    (!parentId && n.type === 'cache');
+}));
+
+const nodesForC33 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_33' ||
+    (!parentId && (n.id.toUpperCase() === 'FE_APICLIENT' || n.id === 'fe_apiclient'));
+}));
+
+const nodesForC34 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_34';
+}));
+
+const nodesForC35 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_35' ||
+    (!parentId && n.type === 'appevent');
+}));
 
 </script>
 

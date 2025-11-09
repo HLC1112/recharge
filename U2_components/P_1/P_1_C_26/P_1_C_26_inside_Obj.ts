@@ -4,7 +4,17 @@ export interface INode {
 
   label?: string;
 
+  text?: string;
+
   type?: string;
+
+  style?: string;
+
+  cssStyle?: string;
+
+  parentComponentId?: string;
+
+  componentId?: string;
 
   [key: string]: any;
 

@@ -1,0 +1,586 @@
+{
+  "FE_TRIGGER_UI": {
+    "nodeId": "FE_TRIGGER_UI",
+    "displayText": "用户提交注册表单",
+    "styleClass": "trigger",
+    "styleSummary": "shape:rectangle,fill:#fff,stroke:#ff6600,color:#ff6600,stroke-width:2px",
+    "componentId": "P_1_C_99",
+    "parentComponentId": "P_1_C_26"
+  },
+  "FE_TRIGGER_SLOT": {
+    "nodeId": "FE_TRIGGER_SLOT",
+    "displayText": "触发占位",
+    "styleClass": "trigger",
+    "styleSummary": "shape:rectangle,fill:#fff,stroke:#ff6600,color:#ff6600,stroke-width:2px",
+    "componentId": "P_1_C_99",
+    "parentComponentId": "P_1_C_26"
+  },
+  "FE_APIClient": {
+    "nodeId": "FE_APIClient",
+    "displayText": "APIClient",
+    "styleClass": "feinfra",
+    "styleSummary": "fill:#fff8e1,stroke:#b38600,color:#b38600,stroke-width:2px",
+    "componentId": "P_1_C_104",
+    "parentComponentId": "P_1_C_33"
+  },
+  "FE_TSDSV": {
+    "nodeId": "FE_TSDSV",
+    "displayText": "FE_TSDSV(前端领域服务)",
+    "styleClass": "feinfra",
+    "styleSummary": "fill:#fff8e1,stroke:#b38600,color:#b38600,stroke-width:2px",
+    "componentId": "P_1_C_105",
+    "parentComponentId": "P_1_C_28"
+  },
+  "FE_State_Idle": {
+    "nodeId": "FE_State_Idle",
+    "displayText": "s_0: 空闲",
+    "styleClass": "festate",
+    "styleSummary": "fill:#fff3e0,stroke:#ff8f00,color:#333,stroke-width:2px",
+    "componentId": "P_1_C_100",
+    "parentComponentId": "P_1_C_27"
+  },
+  "FE_State_Requesting": {
+    "nodeId": "FE_State_Requesting",
+    "displayText": "s_1: 注册中",
+    "styleClass": "festate",
+    "styleSummary": "fill:#fff3e0,stroke:#ff8f00,color:#333,stroke-width:2px",
+    "componentId": "P_1_C_101",
+    "parentComponentId": "P_1_C_27"
+  },
+  "FE_State_Allowed": {
+    "nodeId": "FE_State_Allowed",
+    "displayText": "s_2: 注册成功",
+    "styleClass": "endstate",
+    "styleSummary": "fill:#e6ffe6,stroke:#006600,color:#333",
+    "componentId": "P_1_C_102",
+    "parentComponentId": "P_1_C_27"
+  },
+  "FE_State_Blocked": {
+    "nodeId": "FE_State_Blocked",
+    "displayText": "s_3: 注册失败",
+    "styleClass": "blockstate",
+    "styleSummary": "fill:#ffe6e6,stroke:#cc0000,color:#333",
+    "componentId": "P_1_C_103",
+    "parentComponentId": "P_1_C_27"
+  },
+  "FE_CACHE_L": {
+    "nodeId": "FE_CACHE_L",
+    "displayText": "FE_CACHE_L(会话缓存)",
+    "styleClass": "cache",
+    "styleSummary": "shape:cylinder,fill:#fff3e0,stroke:#b38600,color:#333",
+    "componentId": "P_1_C_108",
+    "parentComponentId": "P_1_C_32"
+  },
+  "FE_STORE_UF": {
+    "nodeId": "FE_STORE_UF",
+    "displayText": "UF_VIEW Store(注册流程状态)",
+    "styleClass": "ufstore",
+    "styleSummary": "shape:cylinder,fill:#663399,stroke:#330066,color:#ffffff",
+    "componentId": "P_1_C_106",
+    "parentComponentId": "P_1_C_29"
+  },
+  "FE_STORE_UI": {
+    "nodeId": "FE_STORE_UI",
+    "displayText": "UI Store(渲染状态)",
+    "styleClass": "uistore",
+    "styleSummary": "shape:cylinder,fill:#e3d4f5,stroke:#a486c9,color:#333",
+    "componentId": "P_1_C_107",
+    "parentComponentId": "P_1_C_30"
+  },
+  "E01": {
+    "nodeId": "E01",
+    "displayText": "E01: Trigger",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "E04": {
+    "nodeId": "E04",
+    "displayText": "E04: UF Patch",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "E05": {
+    "nodeId": "E05",
+    "displayText": "E05: UF Patch ACK",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "E07": {
+    "nodeId": "E07",
+    "displayText": "E07: TSDSV Command",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "E10": {
+    "nodeId": "E10",
+    "displayText": "E10: TSDSV Ack",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "E17": {
+    "nodeId": "E17",
+    "displayText": "E17: L-Cache Patch CMD",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "E18": {
+    "nodeId": "E18",
+    "displayText": "E18: L-Cache ACK",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "E20": {
+    "nodeId": "E20",
+    "displayText": "E20: UI Store Patch",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "HTTP_Action_Req": {
+    "nodeId": "HTTP_Action_Req",
+    "displayText": "HTTP POST /v1/register",
+    "styleClass": "httpevent",
+    "styleSummary": "形状: parallelogram，填充: #f5f5f5，边框: #555",
+    "componentId": "P_1_C_110",
+    "parentComponentId": "P_1_C_38"
+  },
+  "HTTP_Res_OK": {
+    "nodeId": "HTTP_Res_OK",
+    "displayText": "HTTP响应 200 OK(含会话信息)",
+    "styleClass": "httpevent",
+    "styleSummary": "shape:parallelogram,fill:#f5f5f5,stroke:#555,color:#333",
+    "componentId": "P_1_C_110",
+    "parentComponentId": "P_1_C_38"
+  },
+  "HTTP_Res_Blocked": {
+    "nodeId": "HTTP_Res_Blocked",
+    "displayText": "HTTP响应 4xx/5xx(含失败原因)",
+    "styleClass": "httpevent",
+    "styleSummary": "shape:parallelogram,fill:#f5f5f5,stroke:#555,color:#333",
+    "componentId": "P_1_C_110",
+    "parentComponentId": "P_1_C_38"
+  },
+  "BE_APIGateway": {
+    "nodeId": "BE_APIGateway",
+    "displayText": "API网关",
+    "styleClass": "beinfra",
+    "styleSummary": "fill:#e3f2fd,stroke:#004080,color:#004080,stroke-width:2px",
+    "componentId": "P_1_C_111",
+    "parentComponentId": "P_1_C_38"
+  },
+  "BE_Trigger": {
+    "nodeId": "BE_Trigger",
+    "displayText": "HTTP请求（转换为内部命令）",
+    "styleClass": "trigger",
+    "styleSummary": "shape:rectangle,fill:#fff,stroke:#ff6600,color:#ff6600,stroke-width:2px",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "BD_Receiving": {
+    "nodeId": "BD_Receiving",
+    "displayText": "s_1: 接收命令",
+    "styleClass": "(无显式类)",
+    "styleSummary": "(使用默认样式)",
+    "componentId": "P_1_C_112",
+    "parentComponentId": "P_1_C_40"
+  },
+  "BD_Verifying": {
+    "nodeId": "BD_Verifying",
+    "displayText": "s_2: 执行前置校验",
+    "styleClass": "(无显式类)",
+    "styleSummary": "(使用默认样式)",
+    "componentId": "P_1_C_112",
+    "parentComponentId": "P_1_C_40"
+  },
+  "BD_Decision": {
+    "nodeId": "BD_Decision",
+    "displayText": "s_3: 校验决策点",
+    "styleClass": "maintaskevent",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#cc0000,color:#cc0000,stroke-width:2px",
+    "componentId": "P_1_C_112",
+    "parentComponentId": "P_1_C_40"
+  },
+  "BD_Creating": {
+    "nodeId": "BD_Creating",
+    "displayText": "s_4: 创建用户与会话",
+    "styleClass": "endstate",
+    "styleSummary": "fill:#e6ffe6,stroke:#006600,color:#333",
+    "componentId": "P_1_C_112",
+    "parentComponentId": "P_1_C_40"
+  },
+  "BD_Failing": {
+    "nodeId": "BD_Failing",
+    "displayText": "s_5: 处理注册失败",
+    "styleClass": "blockstate",
+    "styleSummary": "fill:#ffe6e6,stroke:#cc0000,color:#333",
+    "componentId": "P_1_C_112",
+    "parentComponentId": "P_1_C_40"
+  },
+  "DA_RiskFsm": {
+    "nodeId": "DA_RiskFsm",
+    "displayText": "DSV_FSM: RiskScoringFsm(流程编排与状态机)",
+    "styleClass": "da_orchestrator",
+    "styleSummary": "fill:#e0f2f1,stroke:#004d40,color:#004d40,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "P_1_C_113",
+    "parentComponentId": "P_1_C_41"
+  },
+  "S1": {
+    "nodeId": "S1",
+    "displayText": "S1: Idle",
+    "styleClass": "fsm_state",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "S2": {
+    "nodeId": "S2",
+    "displayText": "S2: Scoring Event",
+    "styleClass": "fsm_state",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "S2P": {
+    "nodeId": "S2P",
+    "displayText": "S2_PENDING: 等待结果/资源",
+    "styleClass": "fsm_state",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "S3": {
+    "nodeId": "S3",
+    "displayText": "S3: Executing Action",
+    "styleClass": "fsm_state",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "S3T": {
+    "nodeId": "S3T",
+    "displayText": "S3_TIMEOUT: 超时",
+    "styleClass": "fsm_state",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "S_COMP": {
+    "nodeId": "S_COMP",
+    "displayText": "S_COMPENSATING: 补偿",
+    "styleClass": "fsm_state",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "S4": {
+    "nodeId": "S4",
+    "displayText": "S4: Success",
+    "styleClass": "fsm_state",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "SF": {
+    "nodeId": "SF",
+    "displayText": "S_Failed",
+    "styleClass": "fsm_state",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "InternalEventBus": {
+    "nodeId": "InternalEventBus",
+    "displayText": "Internal EventBus",
+    "styleClass": "bus",
+    "styleSummary": "fill:#fafafa,stroke:#455a64,color:#263238,stroke-dasharray:5 4,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "DSV_AuthService": {
+    "nodeId": "DSV_AuthService",
+    "displayText": "DSV_AuthService(用户创建/失败记录)",
+    "styleClass": "dsv",
+    "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2px",
+    "componentId": "P_1_C_113",
+    "parentComponentId": "P_1_C_41"
+  },
+  "DC_RiskCalculator": {
+    "nodeId": "DC_RiskCalculator",
+    "displayText": "DC: Risk.Score",
+    "styleClass": "dc_component",
+    "styleSummary": "fill:#e0f7fa,stroke:#006064,color:#333,stroke-width:2px",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "L_RiskRules": {
+    "nodeId": "L_RiskRules",
+    "displayText": "L: risk_rules.json",
+    "styleClass": "l_component",
+    "styleSummary": "fill:#f9fbe7,stroke:#827717,color:#333,stroke-width:2px",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "DA0_RiskEventAccessor": {
+    "nodeId": "DA0_RiskEventAccessor",
+    "displayText": "DA_0: RiskEventAccessor (读)",
+    "styleClass": "da0_component",
+    "styleSummary": "fill:#e3f2fd,stroke:#0d47a1,color:#333,stroke-width:2px",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "DA0_RiskActionTransaction": {
+    "nodeId": "DA0_RiskActionTransaction",
+    "displayText": "DA_0: RiskActionTransaction (写)",
+    "styleClass": "da0_component",
+    "styleSummary": "fill:#e3f2fd,stroke:#0d47a1,color:#333,stroke-width:2px",
+    "componentId": "P_1_C_113",
+    "parentComponentId": "P_1_C_41"
+  },
+  "Adapter_EventBus": {
+    "nodeId": "Adapter_EventBus",
+    "displayText": "Adapter: EventBus(外部)",
+    "styleClass": "adapter_component",
+    "styleSummary": "fill:#f3e5f5,stroke:#4a148c,color:#333,stroke-width:2px",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "ExitPoint": {
+    "nodeId": "ExitPoint",
+    "displayText": "System.EventBus(发布风控结果事件)",
+    "styleClass": "component",
+    "styleSummary": "fill:#f5f5f5,stroke:#616161,color:#333",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "Repo_IF_RiskEvents": {
+    "nodeId": "Repo_IF_RiskEvents",
+    "displayText": "Repository IF: RiskEventsRepository",
+    "styleClass": "repo_iface",
+    "styleSummary": "fill:#fffde7,stroke:#8d6e63,color:#5d4037,stroke-width:2px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "Repo_IF_UserFlags": {
+    "nodeId": "Repo_IF_UserFlags",
+    "displayText": "Repository IF: UserFlagsRepository",
+    "styleClass": "repo_iface",
+    "styleSummary": "fill:#fffde7,stroke:#8d6e63,color:#5d4037,stroke-width:2px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "QRY3301": {
+    "nodeId": "QRY3301",
+    "displayText": "QRY3301_REQ",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "CMD3302_A": {
+    "nodeId": "CMD3302_A",
+    "displayText": "CMD3302_A_REQ",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT3302_B": {
+    "nodeId": "EVT3302_B",
+    "displayText": "EVT3302_B_DONE",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "CMD3302_C": {
+    "nodeId": "CMD3302_C",
+    "displayText": "CMD3302_C_REQ",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT3303": {
+    "nodeId": "EVT3303",
+    "displayText": "EVT3303_DONE",
+    "styleClass": "doc_node",
+    "styleSummary": "shape:diamond,fill:#e6ffe6,stroke:#2e8b57,color:#2e8b57,stroke-width:2px",
+    "componentId": "",
+    "parentComponentId": "P_1_C_45"
+  },
+  "CMD3304": {
+    "nodeId": "CMD3304",
+    "displayText": "CMD3304_REQ(写)",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT3305": {
+    "nodeId": "EVT3305",
+    "displayText": "EVT3305_DONE",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "FAIL3401": {
+    "nodeId": "FAIL3401",
+    "displayText": "FAIL3401_ERR",
+    "styleClass": "fail_event",
+    "styleSummary": "shape:diamond,fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px",
+    "componentId": "P_1_C_118",
+    "parentComponentId": "P_1_C_45"
+  },
+  "DOC3306": {
+    "nodeId": "DOC3306",
+    "displayText": "DOC3306_ACK",
+    "styleClass": "doc_node",
+    "styleSummary": "shape:diamond,fill:#e6ffe6,stroke:#2e8b57,color:#2e8b57,stroke-width:2px",
+    "componentId": "",
+    "parentComponentId": "P_1_C_45"
+  },
+  "Repo_IMPL_RiskEvents": {
+    "nodeId": "Repo_IMPL_RiskEvents",
+    "displayText": "Repository Impl: RiskEventsRepositoryMySQL",
+    "styleClass": "repo_impl",
+    "styleSummary": "fill:#fff3e0,stroke:#6d4c41,color:#4e342e,stroke-width:2px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "Repo_IMPL_UserFlags": {
+    "nodeId": "Repo_IMPL_UserFlags",
+    "displayText": "Repository Impl: UserFlagsRepositoryMySQL",
+    "styleClass": "repo_impl",
+    "styleSummary": "fill:#fff3e0,stroke:#6d4c41,color:#4e342e,stroke-width:2px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "DB_Auth": {
+    "nodeId": "DB_Auth",
+    "displayText": "DB: T_USER, T_SESSION (MySQL)",
+    "styleClass": "db_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_115",
+    "parentComponentId": "P_1_C_42"
+  },
+  "DB_RiskEvents_MySQL": {
+    "nodeId": "DB_RiskEvents_MySQL",
+    "displayText": "DB: risk_events (MySQL)",
+    "styleClass": "db_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_115",
+    "parentComponentId": "P_1_C_42"
+  },
+  "DB_UserFlags_MySQL": {
+    "nodeId": "DB_UserFlags_MySQL",
+    "displayText": "DB: user_flags (MySQL)",
+    "styleClass": "db_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_115",
+    "parentComponentId": "P_1_C_42"
+  },
+  "DB_Outbox": {
+    "nodeId": "DB_Outbox",
+    "displayText": "DB: outbox_events (MySQL)",
+    "styleClass": "db_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_115",
+    "parentComponentId": "P_1_C_42"
+  },
+  "DAT_CDC": {
+    "nodeId": "DAT_CDC",
+    "displayText": "Debezium / Canal (CDC)",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "",
+    "parentComponentId": "数据库页面"
+  },
+  "DAT_Kafka": {
+    "nodeId": "DAT_Kafka",
+    "displayText": "Kafka (topics)",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "DAT_Consumer": {
+    "nodeId": "DAT_Consumer",
+    "displayText": "Kafka Consumer",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "DAT_Redis": {
+    "nodeId": "DAT_Redis",
+    "displayText": "Redis (Cache)",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "",
+    "parentComponentId": "P_1_C_43"
+  },
+  "DAT_MongoDB": {
+    "nodeId": "DAT_MongoDB",
+    "displayText": "MongoDB (Read Model)",
+    "styleClass": "db_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_116",
+    "parentComponentId": "P_1_C_43"
+  },
+  "Kafka_DLQ": {
+    "nodeId": "Kafka_DLQ",
+    "displayText": "Kafka DLQ",
+    "styleClass": "dlq",
+    "styleSummary": "fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": "数据库页面"
+  },
+  "Consumer_DLQ": {
+    "nodeId": "Consumer_DLQ",
+    "displayText": "Consumer DLQ",
+    "styleClass": "dlq",
+    "styleSummary": "fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "ReadModelLagMonitor": {
+    "nodeId": "ReadModelLagMonitor",
+    "displayText": "读模型滞后监控/告警",
+    "styleClass": "monitor",
+    "styleSummary": "fill:#fffbe6,stroke:#8d6e63,color:#5d4037,stroke-width:2px,rx:8,ry:8",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "CachePolicyNote": {
+    "nodeId": "CachePolicyNote",
+    "displayText": "注: 缓存策略=写后删/失效",
+    "styleClass": "note",
+    "styleSummary": "fill:#eef7ff,stroke:#1976d2,color:#1976d2,rx:6,ry:6,stroke-dasharray:4 3",
+    "componentId": "",
+    "parentComponentId": ""
+  },
+  "FE_Decision": {
+    "nodeId": "FE_Decision",
+    "displayText": "API 结果?",
+    "styleClass": "fedecision",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8f00,color:#333,stroke-width:2px",
+    "componentId": "",
+    "parentComponentId": ""
+  }
+}

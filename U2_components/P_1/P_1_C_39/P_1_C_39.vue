@@ -49,13 +49,31 @@ const { handleNodeClick } = useControl(props, emit); // [cite: 1135]
 const { componentStyle } = useComponentStyles(props);
 const { tag, containerClasses, textContent } = useContainer(props);
 
-// [修正] 按 R1.mmd [cite: 1-51] 和 P_1_C_39_control.ts [cite: 1136-1140] 的定义过滤
-const nodesForC40 = computed(() => props.nodes.filter(n => n.type === 'fsmbrain' || n.type === 'fsm_state' || n.type === 'maintaskevent' || n.type === 'endstate' || n.type === 'blockstate'));
-const nodesForC41 = computed(() => props.nodes.filter(n => n.type === 'da_orchestrator' || n.type === 'dsv' || n.type === 'dc_component' || n.type === 'l_component' || n.type === 'da0_component' || n.type === 'adapter_component' || n.type === 'component'));
-const nodesForC42 = computed(() => props.nodes.filter(n => n.type === 'db_component' || n.type === 'repo_iface' || n.type === 'repo_impl' || n.type === 'dat_component')); // 假设写入
-const nodesForC43 = computed(() => props.nodes.filter(n => n.type === 'dat_component' || n.type === 'dlq' || n.type === 'monitor' || n.type === 'note')); // 假设读取
-const nodesForC44 = computed(() => props.nodes.filter(n => n.type === 'bus'));
-const nodesForC45 = computed(() => props.nodes.filter(n => n.type === 'event_node' || n.type === 'fail_event' || n.type === 'doc_node'));
+// 根据parentComponentId过滤节点，如果没有parentComponentId则回退到类型匹配
+const nodesForC40 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_40' || (!parentId && (n.type === 'fsmbrain' || n.type === 'fsm_state' || n.type === 'maintaskevent' || n.type === 'endstate' || n.type === 'blockstate'));
+}));
+const nodesForC41 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_41' || (!parentId && (n.type === 'da_orchestrator' || n.type === 'dsv' || n.type === 'dc_component' || n.type === 'l_component' || n.type === 'da0_component' || n.type === 'adapter_component' || n.type === 'component'));
+}));
+const nodesForC42 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_42' || (!parentId && (n.type === 'db_component' || n.type === 'repo_iface' || n.type === 'repo_impl' || n.type === 'dat_component'));
+}));
+const nodesForC43 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_43' || (!parentId && (n.type === 'dat_component' || n.type === 'dlq' || n.type === 'monitor' || n.type === 'note'));
+}));
+const nodesForC44 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_44' || (!parentId && n.type === 'bus');
+}));
+const nodesForC45 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_45' || (!parentId && (n.type === 'event_node' || n.type === 'fail_event' || n.type === 'doc_node'));
+}));
 
 </script>
 

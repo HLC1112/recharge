@@ -33,9 +33,15 @@ const { handleNodeClick } = useControl(props, emit);
 const { componentStyle } = useComponentStyles(props);
 const { tag, containerClasses, textContent } = useContainer(props);
 
-// [修正] 按类型过滤 nodes
-const nodesForC37 = computed(() => props.nodes.filter(n => n.type === 'httpevent'));
-const nodesForC38 = computed(() => props.nodes.filter(n => n.type === 'beinfra'));
+// 根据parentComponentId过滤节点，如果没有parentComponentId则回退到类型匹配
+const nodesForC37 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_37' || (!parentId && n.type === 'httpevent');
+}));
+const nodesForC38 = computed(() => props.nodes.filter(n => {
+  const parentId = (n as any).parentComponentId;
+  return parentId === 'P_1_C_38' || (!parentId && n.type === 'beinfra');
+}));
 
 </script>
 
