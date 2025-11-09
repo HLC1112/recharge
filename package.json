@@ -8,6 +8,8 @@
   "devDependencies": {
     "@types/howler": "^2.2.12",
     "@vitejs/plugin-vue": "^6.0.1",
+    "sass-embedded": "^1.93.3",
+    "typescript": "^5.9.3",
     "vite": "^7.1.5"
   }
 }

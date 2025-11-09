@@ -1,3 +1,7 @@
+<template>
+	<IndexPage />
+</template>
+
 <script>
 	export default {
 		onLaunch: function() {
