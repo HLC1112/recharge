@@ -1,0 +1,9 @@
+import { computed } from 'vue';
+import { IProps } from './P_1_C_128_inside_Obj';
+
+// CL_18: Container
+export function useContainerLogic(props: IProps) {
+  const containerTag = computed(() => 'div');
+
+  return { containerTag };
+}

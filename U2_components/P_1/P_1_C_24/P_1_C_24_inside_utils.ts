@@ -13,9 +13,6 @@ import { IProps } from './P_1_C_24_inside_Obj';
 export function useElement(props: IProps) {
 
   const tag = computed(() => 'div');
-
-
-
   const elementId = computed(() => 'main-container');
 
 
@@ -54,22 +51,22 @@ export function usePlaneNodes(props: IProps) {
   const backendParentIds = ['P_1_C_39', 'P_1_C_40', 'P_1_C_41', 'P_1_C_42', 'P_1_C_43', 'P_1_C_44', 'P_1_C_45'];
 
   const filterNodesByParentIds = (parentIds: string[]) => {
-    const filtered = props.nodes.filter((node: any) => {
+     const filtered = props.nodes.filter((node: any) => {
       const parentId = node.parentComponentId;
       if (parentId) {
         const matched = parentIds.includes(parentId);
         if (matched && parentIds.includes('P_1_C_25')) {
-          // 前端平面调试日志
+           // 前端平面调试日志
           console.log(`[usePlaneNodes] 前端节点匹配: ${node.id} -> parentComponentId: ${parentId}`);
         }
         return matched;
       }
-      // 如果没有parentComponentId，根据类型或ID推断（后备方案）
+       // 如果没有parentComponentId，根据类型或ID推断（后备方案）
       // 前端：trigger, festate, endstate, blockstate, fsmbrain, feinfra, ufstore, uistore, cache, appevent
       // HTTPS：httpevent, beinfra (网关)
       // 后端：其他类型
       const nodeType = node.type || '';
-      const nodeId = (node.id || '').toUpperCase();
+       const nodeId = (node.id || '').toUpperCase();
       
       // 前端节点类型
       if (['trigger', 'festate', 'endstate', 'blockstate', 'fsmbrain', 'feinfra', 'ufstore', 'uistore', 'cache', 'appevent'].includes(nodeType) ||
@@ -79,7 +76,7 @@ export function usePlaneNodes(props: IProps) {
       // HTTPS节点类型
       if (['httpevent'].includes(nodeType) || 
           (nodeType === 'beinfra' && (nodeId.includes('GATEWAY') || nodeId.includes('API'))) ||
-          nodeId.startsWith('HTTP_')) {
+           nodeId.startsWith('HTTP_')) {
         return parentIds.includes('P_1_C_36');
       }
       // 后端节点类型（默认）
@@ -109,12 +106,12 @@ export function usePlaneNodes(props: IProps) {
     console.log(`[usePlaneNodes] HTTPS平面: 输入 ${props.nodes.length} 个节点, 过滤后 ${filtered.length} 个节点`);
     // 检查 BE_APIGateway 节点
     const beGateway = props.nodes.find(n => n.id === 'BE_APIGateway');
-    if (beGateway) {
+     if (beGateway) {
       console.log(`[usePlaneNodes] BE_APIGateway 节点信息:`, {
         id: beGateway.id,
         parentComponentId: (beGateway as any).parentComponentId,
         type: beGateway.type,
-        inFiltered: filtered.some(n => n.id === 'BE_APIGateway')
+         inFiltered: filtered.some(n => n.id === 'BE_APIGateway')
       });
     }
     return filtered;
@@ -123,45 +120,29 @@ export function usePlaneNodes(props: IProps) {
   const backendNodes = computed(() => filterNodesByParentIds(backendParentIds));
 
 
-
+  // ★★★ [修改] 传递 tracedNodeSet ★★★
   const frontendProps = computed(() => ({
-
     nodes: frontendNodes.value,
-
     highlightedNodes: props.highlightedNodes,
-
+    tracedNodeSet: props.tracedNodeSet, // <-- 新增
   }));
-
-
 
   const httpsProps = computed(() => ({
-
     nodes: httpsNodes.value,
-
     highlightedNodes: props.highlightedNodes,
-
+    tracedNodeSet: props.tracedNodeSet, // <-- 新增
   }));
-
-
 
   const backendProps = computed(() => ({
-
     nodes: backendNodes.value,
-
     highlightedNodes: props.highlightedNodes,
-
+    tracedNodeSet: props.tracedNodeSet, // <-- 新增
   }));
-
-
+  // ★★★ 修改结束 ★★★
 
   return {
-
     frontendProps,
-
     httpsProps,
-
     backendProps,
-
   };
-
 }

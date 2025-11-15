@@ -1,0 +1,1 @@
+export * from '../../../U8_config/mmdParser';

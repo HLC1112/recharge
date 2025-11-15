@@ -3,8 +3,10 @@ import { IProps } from './P_1_C_113_inside_Obj';
 
 export function useComponentStyles(props: IProps) {
   const componentStyle = reactive<CSSProperties>({
-    position: 'absolute',
-    zIndex: 4,
+    // [修改] 从 'absolute' 变为 'relative'
+    position: 'relative',
+    // zIndex: 4, // 在 'relative' 布局中不再需要高 z-index
+    zIndex: 3,
   });
 
   const nodeClasses = computed(() => [

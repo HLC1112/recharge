@@ -78,32 +78,27 @@
 
 import { defineProps, withDefaults } from 'vue';
 
-import { IProps, INode, ILink } from './P_1_C_46_inside_Obj';
-
+import { IProps, INode, ILink } from './P_1_C_46_inside_Obj'; // IProps 定义已更新
 import { useControl } from './P_1_C_46_control';
-
 import { useComponentStyles } from './P_1_C_46_inside_UI';
-
 import { useSvgCanvas } from './P_1_C_46_inside_utils';
 
-
-
+// [修改] withDefaults 中添加新 props 的默认值
 const props = withDefaults(defineProps<IProps>(), {
-
   nodes: () => [],
-
   links: () => [],
-
   highlightedLinks: () => [],
-
+  
+  // ★★★ 新增 props 默认值 ★★★
+  dsvNodeIds: () => new Set<string>(),
+  dbNodeIds: () => new Set<string>(),
+  isDsvModalOpen: false,
+  isDbModalOpen: false,
+  // ★★★ 修改结束 ★★★
 });
 
-
-
 const { componentStyle } = useComponentStyles(props);
-
 const { svgClasses } = useSvgCanvas(props);
-
-const { renderedLinks } = useControl(props);
+const { renderedLinks } = useControl(props); // useControl 现在会使用新 props
 
 </script>

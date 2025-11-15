@@ -13,7 +13,7 @@ export function useComponentStyles(_props: IProps) {
     backdropFilter: 'blur(2px)',
     pointerEvents: 'auto', // 自身可交互
     padding: '8px',
-    zIndex: 2100,
+    zIndex: 74,
   })
   return { componentStyle }
 }

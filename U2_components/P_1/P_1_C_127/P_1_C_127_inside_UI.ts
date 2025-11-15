@@ -1,0 +1,14 @@
+import { reactive, CSSProperties } from 'vue';
+import { IProps } from './P_1_C_127_inside_Obj';
+
+// 基于 P_1_C_27_inside_UI.ts [cite: 800]
+export function useComponentStyles(props: IProps) {
+  const componentStyle = reactive<CSSProperties>({
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    zIndex: 3,
+  });
+
+  return { componentStyle };
+}

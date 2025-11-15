@@ -1,7 +1,7 @@
 {
   "FE_TRIGGER_UI": {
     "nodeId": "FE_TRIGGER_UI",
-    "displayText": "用户提交注册表单",
+    "displayText": "用户点击充值按钮",
     "styleClass": "trigger",
     "styleSummary": "shape:rectangle,fill:#fff,stroke:#ff6600,color:#ff6600,stroke-width:2px",
     "componentId": "P_1_C_99",
@@ -17,7 +17,7 @@
   },
   "FE_APIClient": {
     "nodeId": "FE_APIClient",
-    "displayText": "APIClient",
+    "displayText": "HTTP Client (P_X_C_1_api.callRechargeApi)",
     "styleClass": "feinfra",
     "styleSummary": "fill:#fff8e1,stroke:#b38600,color:#b38600,stroke-width:2px",
     "componentId": "P_1_C_104",
@@ -25,7 +25,7 @@
   },
   "FE_TSDSV": {
     "nodeId": "FE_TSDSV",
-    "displayText": "FE_TSDSV(前端领域服务)",
+    "displayText": "UI Store Service (Zustand)",
     "styleClass": "feinfra",
     "styleSummary": "fill:#fff8e1,stroke:#b38600,color:#b38600,stroke-width:2px",
     "componentId": "P_1_C_105",
@@ -41,7 +41,7 @@
   },
   "FE_State_Requesting": {
     "nodeId": "FE_State_Requesting",
-    "displayText": "s_1: 注册中",
+    "displayText": "s_1: 充值请求中",
     "styleClass": "festate",
     "styleSummary": "fill:#fff3e0,stroke:#ff8f00,color:#333,stroke-width:2px",
     "componentId": "P_1_C_101",
@@ -49,7 +49,7 @@
   },
   "FE_State_Allowed": {
     "nodeId": "FE_State_Allowed",
-    "displayText": "s_2: 注册成功",
+    "displayText": "s_2: 充值成功",
     "styleClass": "endstate",
     "styleSummary": "fill:#e6ffe6,stroke:#006600,color:#333",
     "componentId": "P_1_C_102",
@@ -57,7 +57,7 @@
   },
   "FE_State_Blocked": {
     "nodeId": "FE_State_Blocked",
-    "displayText": "s_3: 注册失败",
+    "displayText": "s_3: 充值失败",
     "styleClass": "blockstate",
     "styleSummary": "fill:#ffe6e6,stroke:#cc0000,color:#333",
     "componentId": "P_1_C_103",
@@ -65,7 +65,7 @@
   },
   "FE_CACHE_L": {
     "nodeId": "FE_CACHE_L",
-    "displayText": "FE_CACHE_L(会话缓存)",
+    "displayText": "FE_CACHE_L (orderId本地缓存/可选)",
     "styleClass": "cache",
     "styleSummary": "shape:cylinder,fill:#fff3e0,stroke:#b38600,color:#333",
     "componentId": "P_1_C_108",
@@ -73,7 +73,7 @@
   },
   "FE_STORE_UF": {
     "nodeId": "FE_STORE_UF",
-    "displayText": "UF_VIEW Store(注册流程状态)",
+    "displayText": "UF_VIEW Store (充值流程状态)",
     "styleClass": "ufstore",
     "styleSummary": "shape:cylinder,fill:#663399,stroke:#330066,color:#ffffff",
     "componentId": "P_1_C_106",
@@ -153,7 +153,7 @@
   },
   "HTTP_Action_Req": {
     "nodeId": "HTTP_Action_Req",
-    "displayText": "HTTP POST /v1/register",
+    "displayText": "HTTP POST /api/recharge",
     "styleClass": "httpevent",
     "styleSummary": "形状: parallelogram，填充: #f5f5f5，边框: #555",
     "componentId": "P_1_C_110",
@@ -161,7 +161,7 @@
   },
   "HTTP_Res_OK": {
     "nodeId": "HTTP_Res_OK",
-    "displayText": "HTTP响应 200 OK(含会话信息)",
+    "displayText": "HTTP响应 202 Accepted",
     "styleClass": "httpevent",
     "styleSummary": "shape:parallelogram,fill:#f5f5f5,stroke:#555,color:#333",
     "componentId": "P_1_C_110",
@@ -177,23 +177,167 @@
   },
   "BE_APIGateway": {
     "nodeId": "BE_APIGateway",
-    "displayText": "API网关",
+    "displayText": "API网关 (Gateway)",
     "styleClass": "beinfra",
     "styleSummary": "fill:#e3f2fd,stroke:#004080,color:#004080,stroke-width:2px",
     "componentId": "P_1_C_111",
     "parentComponentId": "P_1_C_38"
   },
-  "BE_Trigger": {
-    "nodeId": "BE_Trigger",
-    "displayText": "HTTP请求（转换为内部命令）",
-    "styleClass": "trigger",
-    "styleSummary": "shape:rectangle,fill:#fff,stroke:#ff6600,color:#ff6600,stroke-width:2px",
-    "componentId": "",
-    "parentComponentId": ""
+  "CMD_1004_START_RECHARGE": {
+    "nodeId": "CMD_1004_START_RECHARGE",
+    "displayText": "CMD_1004_START_RECHARGE",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "CMD_1005_CREATE_ORDER": {
+    "nodeId": "CMD_1005_CREATE_ORDER",
+    "displayText": "CMD_1005_CREATE_ORDER",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "CMD_1007_PAY_ORDER": {
+    "nodeId": "CMD_1007_PAY_ORDER",
+    "displayText": "CMD_1007_PAY_ORDER",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "CMD_1010_UPDATE_ASSET": {
+    "nodeId": "CMD_1010_UPDATE_ASSET",
+    "displayText": "CMD_1010_UPDATE_ASSET",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1006_SUCCESS": {
+    "nodeId": "EVT_1006_SUCCESS",
+    "displayText": "EVT_1006_SUCCESS",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1006_FAILURE": {
+    "nodeId": "EVT_1006_FAILURE",
+    "displayText": "EVT_1006_FAILURE",
+    "styleClass": "fail_event",
+    "styleSummary": "shape:diamond,fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px",
+    "componentId": "P_1_C_118",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1006_TIMEOUT": {
+    "nodeId": "EVT_1006_TIMEOUT",
+    "displayText": "EVT_1006_TIMEOUT",
+    "styleClass": "fail_event",
+    "styleSummary": "shape:diamond,fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px",
+    "componentId": "P_1_C_118",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1008_1": {
+    "nodeId": "EVT_1008_1",
+    "displayText": "EVT_1008_1",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1008_2": {
+    "nodeId": "EVT_1008_2",
+    "displayText": "EVT_1008_2",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1008_3": {
+    "nodeId": "EVT_1008_3",
+    "displayText": "EVT_1008_3",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1009_1": {
+    "nodeId": "EVT_1009_1",
+    "displayText": "EVT_1009_1",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1009_2": {
+    "nodeId": "EVT_1009_2",
+    "displayText": "EVT_1009_2",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1009_3": {
+    "nodeId": "EVT_1009_3",
+    "displayText": "EVT_1009_3",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1011_1": {
+    "nodeId": "EVT_1011_1",
+    "displayText": "EVT_1011_1",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1011_2": {
+    "nodeId": "EVT_1011_2",
+    "displayText": "EVT_1011_2",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1011_3": {
+    "nodeId": "EVT_1011_3",
+    "displayText": "EVT_1011_3",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1012_1": {
+    "nodeId": "EVT_1012_1",
+    "displayText": "EVT_1012_1",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1012_2": {
+    "nodeId": "EVT_1012_2",
+    "displayText": "EVT_1012_2",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
+  },
+  "EVT_1012_3": {
+    "nodeId": "EVT_1012_3",
+    "displayText": "EVT_1012_3",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_45"
   },
   "BD_Receiving": {
     "nodeId": "BD_Receiving",
-    "displayText": "s_1: 接收命令",
+    "displayText": "s_1: 接收 cmd:PXC1_004",
     "styleClass": "(无显式类)",
     "styleSummary": "(使用默认样式)",
     "componentId": "P_1_C_112",
@@ -201,7 +345,7 @@
   },
   "BD_Verifying": {
     "nodeId": "BD_Verifying",
-    "displayText": "s_2: 执行前置校验",
+    "displayText": "s_2: Saga 启动/预校验",
     "styleClass": "(无显式类)",
     "styleSummary": "(使用默认样式)",
     "componentId": "P_1_C_112",
@@ -209,7 +353,7 @@
   },
   "BD_Decision": {
     "nodeId": "BD_Decision",
-    "displayText": "s_3: 校验决策点",
+    "displayText": "s_3: 事件决策点",
     "styleClass": "maintaskevent",
     "styleSummary": "shape:diamond,fill:#fff,stroke:#cc0000,color:#cc0000,stroke-width:2px",
     "componentId": "P_1_C_112",
@@ -217,7 +361,7 @@
   },
   "BD_Creating": {
     "nodeId": "BD_Creating",
-    "displayText": "s_4: 创建用户与会话",
+    "displayText": "s_4: 发布订单/支付/资产命令",
     "styleClass": "endstate",
     "styleSummary": "fill:#e6ffe6,stroke:#006600,color:#333",
     "componentId": "P_1_C_112",
@@ -225,7 +369,7 @@
   },
   "BD_Failing": {
     "nodeId": "BD_Failing",
-    "displayText": "s_5: 处理注册失败",
+    "displayText": "s_5: 失败/超时处理",
     "styleClass": "blockstate",
     "styleSummary": "fill:#ffe6e6,stroke:#cc0000,color:#333",
     "componentId": "P_1_C_112",
@@ -233,155 +377,163 @@
   },
   "DA_RiskFsm": {
     "nodeId": "DA_RiskFsm",
-    "displayText": "DSV_FSM: RiskScoringFsm(流程编排与状态机)",
+    "displayText": "OTC FSM (受理→验证押金→授予权限→发布批准文档)",
     "styleClass": "da_orchestrator",
     "styleSummary": "fill:#e0f2f1,stroke:#004d40,color:#004d40,stroke-width:2.5px,rx:8,ry:8",
     "componentId": "P_1_C_113",
-    "parentComponentId": "P_1_C_41"
+    "parentComponentId": "P_1_C_127"
   },
   "S1": {
     "nodeId": "S1",
     "displayText": "S1: Idle",
     "styleClass": "fsm_state",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_120",
+    "parentComponentId": "P_1_C_127"
   },
   "S2": {
     "nodeId": "S2",
     "displayText": "S2: Scoring Event",
     "styleClass": "fsm_state",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_120",
+    "parentComponentId": "P_1_C_127"
   },
   "S2P": {
     "nodeId": "S2P",
     "displayText": "S2_PENDING: 等待结果/资源",
     "styleClass": "fsm_state",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_120",
+    "parentComponentId": "P_1_C_127"
   },
   "S3": {
     "nodeId": "S3",
     "displayText": "S3: Executing Action",
     "styleClass": "fsm_state",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_120",
+    "parentComponentId": "P_1_C_127"
   },
   "S3T": {
     "nodeId": "S3T",
     "displayText": "S3_TIMEOUT: 超时",
     "styleClass": "fsm_state",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_120",
+    "parentComponentId": "P_1_C_127"
   },
   "S_COMP": {
     "nodeId": "S_COMP",
     "displayText": "S_COMPENSATING: 补偿",
     "styleClass": "fsm_state",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_120",
+    "parentComponentId": "P_1_C_127"
   },
   "S4": {
     "nodeId": "S4",
     "displayText": "S4: Success",
     "styleClass": "fsm_state",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_120",
+    "parentComponentId": "P_1_C_127"
   },
   "SF": {
     "nodeId": "SF",
     "displayText": "S_Failed",
     "styleClass": "fsm_state",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2.5px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_120",
+    "parentComponentId": "P_1_C_127"
   },
   "InternalEventBus": {
     "nodeId": "InternalEventBus",
     "displayText": "Internal EventBus",
     "styleClass": "bus",
     "styleSummary": "fill:#fafafa,stroke:#455a64,color:#263238,stroke-dasharray:5 4,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_139",
+    "parentComponentId": "P_1_C_84"
   },
   "DSV_AuthService": {
     "nodeId": "DSV_AuthService",
     "displayText": "DSV_AuthService(用户创建/失败记录)",
     "styleClass": "dsv",
     "styleSummary": "fill:#fff0f5,stroke:#d81b60,color:#d81b60,stroke-width:2px",
-    "componentId": "P_1_C_113",
+    "componentId": "P_1_C_114",
     "parentComponentId": "P_1_C_41"
   },
   "DC_RiskCalculator": {
     "nodeId": "DC_RiskCalculator",
-    "displayText": "DC: Risk.Score",
+    "displayText": "DC_1: 押金验证",
     "styleClass": "dc_component",
     "styleSummary": "fill:#e0f7fa,stroke:#006064,color:#333,stroke-width:2px",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_122",
+    "parentComponentId": "P_1_C_84"
   },
   "L_RiskRules": {
     "nodeId": "L_RiskRules",
-    "displayText": "L: risk_rules.json",
+    "displayText": "L: acceptor-rules.json",
     "styleClass": "l_component",
     "styleSummary": "fill:#f9fbe7,stroke:#827717,color:#333,stroke-width:2px",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_122",
+    "parentComponentId": "P_1_C_84"
   },
   "DA0_RiskEventAccessor": {
     "nodeId": "DA0_RiskEventAccessor",
-    "displayText": "DA_0: RiskEventAccessor (读)",
+    "displayText": "DA_0: 读取投影 (Mongo/Redis)",
     "styleClass": "da0_component",
     "styleSummary": "fill:#e3f2fd,stroke:#0d47a1,color:#333,stroke-width:2px",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_121",
+    "parentComponentId": "P_1_C_84"
   },
   "DA0_RiskActionTransaction": {
     "nodeId": "DA0_RiskActionTransaction",
-    "displayText": "DA_0: RiskActionTransaction (写)",
+    "displayText": "DA_0: 事务写 + Outbox",
     "styleClass": "da0_component",
     "styleSummary": "fill:#e3f2fd,stroke:#0d47a1,color:#333,stroke-width:2px",
-    "componentId": "P_1_C_113",
-    "parentComponentId": "P_1_C_41"
+    "componentId": "P_1_C_121",
+    "parentComponentId": "P_1_C_84"
   },
   "Adapter_EventBus": {
     "nodeId": "Adapter_EventBus",
-    "displayText": "Adapter: EventBus(外部)",
+    "displayText": "Adapter: Kafka (otc.applications)",
     "styleClass": "adapter_component",
     "styleSummary": "fill:#f3e5f5,stroke:#4a148c,color:#333,stroke-width:2px",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_123",
+    "parentComponentId": "P_1_C_84"
   },
   "ExitPoint": {
     "nodeId": "ExitPoint",
-    "displayText": "System.EventBus(发布风控结果事件)",
+    "displayText": "处理器桥接: otc-events-topic",
     "styleClass": "component",
     "styleSummary": "fill:#f5f5f5,stroke:#616161,color:#333",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_131",
+    "parentComponentId": "P_1_C_44"
+  },
+  "DBS_Container": {
+    "nodeId": "DBS_Container",
+    "displayText": "DBS Repositories (容器)",
+    "styleClass": "container",
+    "styleSummary": "shape:rectangle,fill:none,stroke:none",
+    "componentId": "P_1_C_130",
+    "parentComponentId": "P_1_C_84"
   },
   "Repo_IF_RiskEvents": {
     "nodeId": "Repo_IF_RiskEvents",
     "displayText": "Repository IF: RiskEventsRepository",
     "styleClass": "repo_iface",
     "styleSummary": "fill:#fffde7,stroke:#8d6e63,color:#5d4037,stroke-width:2px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_132",
+    "parentComponentId": "P_1_C_130"
   },
   "Repo_IF_UserFlags": {
     "nodeId": "Repo_IF_UserFlags",
     "displayText": "Repository IF: UserFlagsRepository",
     "styleClass": "repo_iface",
     "styleSummary": "fill:#fffde7,stroke:#8d6e63,color:#5d4037,stroke-width:2px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_132",
+    "parentComponentId": "P_1_C_130"
   },
   "QRY3301": {
     "nodeId": "QRY3301",
@@ -397,7 +549,7 @@
     "styleClass": "event_node",
     "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
     "componentId": "P_1_C_117",
-    "parentComponentId": "P_1_C_45"
+    "parentComponentId": "P_1_C_139"
   },
   "EVT3302_B": {
     "nodeId": "EVT3302_B",
@@ -405,7 +557,7 @@
     "styleClass": "event_node",
     "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
     "componentId": "P_1_C_117",
-    "parentComponentId": "P_1_C_45"
+    "parentComponentId": "P_1_C_139"
   },
   "CMD3302_C": {
     "nodeId": "CMD3302_C",
@@ -413,15 +565,15 @@
     "styleClass": "event_node",
     "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
     "componentId": "P_1_C_117",
-    "parentComponentId": "P_1_C_45"
+    "parentComponentId": "P_1_C_139"
   },
   "EVT3303": {
     "nodeId": "EVT3303",
     "displayText": "EVT3303_DONE",
     "styleClass": "doc_node",
     "styleSummary": "shape:diamond,fill:#e6ffe6,stroke:#2e8b57,color:#2e8b57,stroke-width:2px",
-    "componentId": "",
-    "parentComponentId": "P_1_C_45"
+    "componentId": "P_1_C_133",
+    "parentComponentId": "P_1_C_139"
   },
   "CMD3304": {
     "nodeId": "CMD3304",
@@ -429,7 +581,7 @@
     "styleClass": "event_node",
     "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
     "componentId": "P_1_C_117",
-    "parentComponentId": "P_1_C_45"
+    "parentComponentId": "P_1_C_139"
   },
   "EVT3305": {
     "nodeId": "EVT3305",
@@ -437,7 +589,7 @@
     "styleClass": "event_node",
     "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
     "componentId": "P_1_C_117",
-    "parentComponentId": "P_1_C_45"
+    "parentComponentId": "P_1_C_139"
   },
   "FAIL3401": {
     "nodeId": "FAIL3401",
@@ -445,14 +597,14 @@
     "styleClass": "fail_event",
     "styleSummary": "shape:diamond,fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px",
     "componentId": "P_1_C_118",
-    "parentComponentId": "P_1_C_45"
+    "parentComponentId": "P_1_C_139"
   },
   "DOC3306": {
     "nodeId": "DOC3306",
     "displayText": "DOC3306_ACK",
     "styleClass": "doc_node",
     "styleSummary": "shape:diamond,fill:#e6ffe6,stroke:#2e8b57,color:#2e8b57,stroke-width:2px",
-    "componentId": "",
+    "componentId": "P_1_C_133",
     "parentComponentId": "P_1_C_45"
   },
   "Repo_IMPL_RiskEvents": {
@@ -460,20 +612,20 @@
     "displayText": "Repository Impl: RiskEventsRepositoryMySQL",
     "styleClass": "repo_impl",
     "styleSummary": "fill:#fff3e0,stroke:#6d4c41,color:#4e342e,stroke-width:2px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_134",
+    "parentComponentId": "P_1_C_130"
   },
   "Repo_IMPL_UserFlags": {
     "nodeId": "Repo_IMPL_UserFlags",
     "displayText": "Repository Impl: UserFlagsRepositoryMySQL",
     "styleClass": "repo_impl",
     "styleSummary": "fill:#fff3e0,stroke:#6d4c41,color:#4e342e,stroke-width:2px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_134",
+    "parentComponentId": "P_1_C_130"
   },
   "DB_Auth": {
     "nodeId": "DB_Auth",
-    "displayText": "DB: T_USER, T_SESSION (MySQL)",
+    "displayText": "DB: 订单/支付/资产 (MySQL)",
     "styleClass": "db_component",
     "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
     "componentId": "P_1_C_115",
@@ -481,7 +633,7 @@
   },
   "DB_RiskEvents_MySQL": {
     "nodeId": "DB_RiskEvents_MySQL",
-    "displayText": "DB: risk_events (MySQL)",
+    "displayText": "DB: applications/outbox/user_permissions (MySQL)",
     "styleClass": "db_component",
     "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
     "componentId": "P_1_C_115",
@@ -505,34 +657,34 @@
   },
   "DAT_CDC": {
     "nodeId": "DAT_CDC",
-    "displayText": "Debezium / Canal (CDC)",
+    "displayText": "OutboxForwarder (CDC 模拟)",
     "styleClass": "dat_component",
     "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
-    "componentId": "",
-    "parentComponentId": "数据库页面"
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
   },
   "DAT_Kafka": {
     "nodeId": "DAT_Kafka",
-    "displayText": "Kafka (topics)",
+    "displayText": "Kafka (topics: order/payment/asset/otc.applications)",
     "styleClass": "dat_component",
     "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
   },
   "DAT_Consumer": {
     "nodeId": "DAT_Consumer",
     "displayText": "Kafka Consumer",
     "styleClass": "dat_component",
     "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
   },
   "DAT_Redis": {
     "nodeId": "DAT_Redis",
     "displayText": "Redis (Cache)",
     "styleClass": "dat_component",
     "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
-    "componentId": "",
+    "componentId": "P_1_C_116",
     "parentComponentId": "P_1_C_43"
   },
   "DAT_MongoDB": {
@@ -548,39 +700,279 @@
     "displayText": "Kafka DLQ",
     "styleClass": "dlq",
     "styleSummary": "fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": "数据库页面"
+    "componentId": "P_1_C_136",
+    "parentComponentId": "P_1_C_128"
   },
   "Consumer_DLQ": {
     "nodeId": "Consumer_DLQ",
     "displayText": "Consumer DLQ",
     "styleClass": "dlq",
     "styleSummary": "fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_136",
+    "parentComponentId": "P_1_C_128"
   },
   "ReadModelLagMonitor": {
     "nodeId": "ReadModelLagMonitor",
     "displayText": "读模型滞后监控/告警",
     "styleClass": "monitor",
     "styleSummary": "fill:#fffbe6,stroke:#8d6e63,color:#5d4037,stroke-width:2px,rx:8,ry:8",
-    "componentId": "",
-    "parentComponentId": ""
-  },
-  "CachePolicyNote": {
-    "nodeId": "CachePolicyNote",
-    "displayText": "注: 缓存策略=写后删/失效",
-    "styleClass": "note",
-    "styleSummary": "fill:#eef7ff,stroke:#1976d2,color:#1976d2,rx:6,ry:6,stroke-dasharray:4 3",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_137",
+    "parentComponentId": "P_1_C_128"
   },
   "FE_Decision": {
     "nodeId": "FE_Decision",
     "displayText": "API 结果?",
     "styleClass": "fedecision",
     "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8f00,color:#333,stroke-width:2px",
-    "componentId": "",
-    "parentComponentId": ""
+    "componentId": "P_1_C_138",
+    "parentComponentId": "P_1_C_27"
+  ,
+  "E01": {
+    "nodeId": "E01",
+    "displayText": "E01: cmd:PXC1_001 Trigger",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "E02": {
+    "nodeId": "E02",
+    "displayText": "E02: cmd:PXC1_002 Trigger",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "FE_APPFSM": {
+    "nodeId": "FE_APPFSM",
+    "displayText": "Root FSM (U13_application_fsmRootService)",
+    "styleClass": "fsmbrain",
+    "styleSummary": "fill:#fce1e1,stroke:#d17c7c,stroke-width:2px",
+    "componentId": "P_1_C_127",
+    "parentComponentId": "P_1_C_28"
+  },
+  "FE_L_WRITER": {
+    "nodeId": "FE_L_WRITER",
+    "displayText": "CICDReporter (Telemetry)",
+    "styleClass": "feinfra",
+    "styleSummary": "fill:#fff8e1,stroke:#b38600,color:#b38600,stroke-width:2px",
+    "componentId": "P_1_C_105",
+    "parentComponentId": "P_1_C_28"
+  },
+  "InternalCommandBus": {
+    "nodeId": "InternalCommandBus",
+    "displayText": "Internal CommandBus",
+    "styleClass": "bus",
+    "styleSummary": "fill:#fafafa,stroke:#455a64,color:#263238,stroke-dasharray:5 4,rx:8,ry:8",
+    "componentId": "P_1_C_139",
+    "parentComponentId": "P_1_C_84"
+  },
+  "QRY001_GetApplicationDataQry": {
+    "nodeId": "QRY001_GetApplicationDataQry",
+    "displayText": "QRY001_GetApplicationDataQry",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_139"
+  },
+  "CMD001_ApplyForAcceptorCmd": {
+    "nodeId": "CMD001_ApplyForAcceptorCmd",
+    "displayText": "CMD001_ApplyForAcceptorCmd",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_139"
+  },
+  "CMD002_ValidateDepositCmd": {
+    "nodeId": "CMD002_ValidateDepositCmd",
+    "displayText": "CMD002_ValidateDepositCmd",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_139"
+  },
+  "CMD003_GrantPermissionCmd": {
+    "nodeId": "CMD003_GrantPermissionCmd",
+    "displayText": "CMD003_GrantPermissionCmd",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_139"
+  },
+  "EVT001_PermissionGrantedEvt": {
+    "nodeId": "EVT001_PermissionGrantedEvt",
+    "displayText": "EVT001_PermissionGrantedEvt",
+    "styleClass": "event_node",
+    "styleSummary": "shape:diamond,fill:#fff,stroke:#ff8c00,color:#d2691e,stroke-width:2px",
+    "componentId": "P_1_C_117",
+    "parentComponentId": "P_1_C_139"
+  },
+  "EVT002_PermissionGrantFailedEvt": {
+    "nodeId": "EVT002_PermissionGrantFailedEvt",
+    "displayText": "EVT002_PermissionGrantFailedEvt",
+    "styleClass": "fail_event",
+    "styleSummary": "shape:diamond,fill:#ffe6e6,stroke:#cc0000,color:#b30000,stroke-width:2px",
+    "componentId": "P_1_C_118",
+    "parentComponentId": "P_1_C_139"
+  },
+  "DOC001_ApplicationDataSnapshotDoc": {
+    "nodeId": "DOC001_ApplicationDataSnapshotDoc",
+    "displayText": "DOC001_ApplicationDataSnapshotDoc",
+    "styleClass": "doc_node",
+    "styleSummary": "shape:diamond,fill:#e6ffe6,stroke:#2e8b57,color:#2e8b57,stroke-width:2px",
+    "componentId": "P_1_C_133",
+    "parentComponentId": "P_1_C_139"
+  },
+  "DOC002_ValidationResultDoc": {
+    "nodeId": "DOC002_ValidationResultDoc",
+    "displayText": "DOC002_ValidationResultDoc",
+    "styleClass": "doc_node",
+    "styleSummary": "shape:diamond,fill:#e6ffe6,stroke:#2e8b57,color:#2e8b57,stroke-width:2px",
+    "componentId": "P_1_C_133",
+    "parentComponentId": "P_1_C_139"
+  },
+  "DOC003_ApplicationApprovedDoc": {
+    "nodeId": "DOC003_ApplicationApprovedDoc",
+    "displayText": "DOC003_ApplicationApprovedDoc",
+    "styleClass": "doc_node",
+    "styleSummary": "shape:diamond,fill:#e6ffe6,stroke:#2e8b57,color:#2e8b57,stroke-width:2px",
+    "componentId": "P_1_C_133",
+    "parentComponentId": "P_1_C_139"
+  },
+  "BE_Trigger": {
+    "nodeId": "BE_Trigger",
+    "displayText": "AuthFilter → CommandPxc1004",
+    "styleClass": "trigger",
+    "styleSummary": "shape:rectangle,fill:#fff,stroke:#ff6600,color:#ff6600,stroke-width:2px",
+    "componentId": "P_1_C_111",
+    "parentComponentId": "P_1_C_38"
+  },
+  "BE_FSM": {
+    "nodeId": "BE_FSM",
+    "displayText": "BEFsm (Saga: 订单→支付→资产)",
+    "styleClass": "fsmbrain",
+    "styleSummary": "fill:#fce1e1,stroke:#d17c7c,stroke-width:2px",
+    "componentId": "P_1_C_112",
+    "parentComponentId": "P_1_C_40"
+  },
+  "K_cmd_recharge": {
+    "nodeId": "K_cmd_recharge",
+    "displayText": "Kafka cmd: recharge",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
+  },
+  "K_cmd_order": {
+    "nodeId": "K_cmd_order",
+    "displayText": "Kafka cmd: order",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
+  },
+  "K_cmd_payment": {
+    "nodeId": "K_cmd_payment",
+    "displayText": "Kafka cmd: payment",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
+  },
+  "K_cmd_asset": {
+    "nodeId": "K_cmd_asset",
+    "displayText": "Kafka cmd: asset",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
+  },
+  "K_evt_order": {
+    "nodeId": "K_evt_order",
+    "displayText": "Kafka evt: order",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
+  },
+  "K_evt_payment": {
+    "nodeId": "K_evt_payment",
+    "displayText": "Kafka evt: payment",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
+  },
+  "K_evt_asset": {
+    "nodeId": "K_evt_asset",
+    "displayText": "Kafka evt: asset",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
+  },
+  "K_otc_bridge": {
+    "nodeId": "K_otc_bridge",
+    "displayText": "Kafka bridge: otc-events",
+    "styleClass": "dat_component",
+    "styleSummary": "fill:#e0e0e0,stroke:#333,color:#333,stroke-width:2px,shape:cylinder",
+    "componentId": "P_1_C_135",
+    "parentComponentId": "P_1_C_128"
+  },
+  "GW_WS_Handler": {
+    "nodeId": "GW_WS_Handler",
+    "displayText": "Gateway WS Handler",
+    "styleClass": "component",
+    "styleSummary": "fill:#f5f5f5,stroke:#616161,color:#333",
+    "componentId": "P_1_C_110",
+    "parentComponentId": "P_1_C_37"
+  },
+  "WS_RECHARGE": {
+    "nodeId": "WS_RECHARGE",
+    "displayText": "ws://recharge-status",
+    "styleClass": "component",
+    "styleSummary": "fill:#f5f5f5,stroke:#616161,color:#333",
+    "componentId": "P_1_C_110",
+    "parentComponentId": "P_1_C_37"
+  },
+  "FE_EventBridge": {
+    "nodeId": "FE_EventBridge",
+    "displayText": "FE EventBridge",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "FE_AppEvent": {
+    "nodeId": "FE_AppEvent",
+    "displayText": "FE AppEvent",
+    "styleClass": "appevent",
+    "styleSummary": "fill:#e6f3ff,stroke:#0066cc,color:#333",
+    "componentId": "P_1_C_109",
+    "parentComponentId": "P_1_C_35"
+  },
+  "FE_ChildFSM": {
+    "nodeId": "FE_ChildFSM",
+    "displayText": "FE 子FSM",
+    "styleClass": "fsmbrain",
+    "styleSummary": "fill:#fce1e1,stroke:#d17c7c,stroke-width:2px",
+    "componentId": "P_1_C_127",
+    "parentComponentId": "P_1_C_27"
+  },
+  "BE_s_order": {
+    "nodeId": "BE_s_order",
+    "displayText": "BE_s_order",
+    "styleClass": "component",
+    "styleSummary": "fill:#f5f5f5,stroke:#616161,color:#333",
+    "componentId": "P_1_C_112",
+    "parentComponentId": "P_1_C_40"
+  },
+  "BE_s_pay": {
+    "nodeId": "BE_s_pay",
+    "displayText": "BE_s_pay",
+    "styleClass": "component",
+    "styleSummary": "fill:#f5f5f5,stroke:#616161,color:#333",
+    "componentId": "P_1_C_112",
+    "parentComponentId": "P_1_C_40"
   }
-}
+}}

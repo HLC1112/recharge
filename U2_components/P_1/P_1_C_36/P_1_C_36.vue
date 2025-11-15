@@ -4,10 +4,10 @@
 
     <div class="plane-grid-container">
       <div class="plane-sub col-span-9 row-span-2">
-        <P_1_C_37 :nodes="nodesForC37" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_37 :nodes="nodesForC37" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-3 row-span-2">
-        <P_1_C_38 :nodes="nodesForC38" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_38 :nodes="nodesForC38" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
     </div>
   </component>

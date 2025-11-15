@@ -1,5 +1,5 @@
 <template>
-  <div :class="['flow-node', computedClass]">
+  <div :class="['flow-node', 'node', computedClass, { 'highlighted': props.isHighlighted }]">
     <div v-if="isDiamond" class="flow-node-content">
       <span v-html="text"></span>
     </div>
@@ -28,6 +28,14 @@ const props = defineProps({
   styleClass: {
     type: String,
     default: 'default' // 默认为 'default'
+  },
+  /**
+   * [ ★ 修正 ★ ] 添加 isHighlighted prop
+   * 控制节点是否高亮
+   */
+  isHighlighted: {
+    type: Boolean,
+    default: false
   }
 });
 

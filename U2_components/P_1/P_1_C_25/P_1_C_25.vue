@@ -4,47 +4,47 @@
     :id="elementId"
     :style="componentStyle"
     :class="elementClasses"
-    @click="handleClickWrapper"
-  >
+    
+    >
     <div class="plane-title">{{ textContent }}</div>
 
     <div class="plane-grid-container">
       <div class="plane-sub col-span-2 row-span-1">
-        <P_1_C_26 :nodes="nodesForC26" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_26 :nodes="nodesForC26" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-3 row-span-2">
-        <P_1_C_27 :nodes="nodesForC27" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_27 :nodes="nodesForC27" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-2 row-span-1">
-        <P_1_C_28 :nodes="nodesForC28" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_28 :nodes="nodesForC28" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-2 row-span-1">
-        <P_1_C_29 :nodes="nodesForC29" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_29 :nodes="nodesForC29" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-2 row-span-1">
-        <P_1_C_30 :nodes="nodesForC30" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_30 :nodes="nodesForC30" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-1 row-span-1">
-        <P_1_C_31 :nodes="nodesForC31" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_31 :nodes="nodesForC31" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-2 row-span-1">
-        <P_1_C_32 :nodes="nodesForC32" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_32 :nodes="nodesForC32" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-2 row-span-1">
-        <P_1_C_33 :nodes="nodesForC33" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_33 :nodes="nodesForC33" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-5 row-span-2">
-        <P_1_C_34 :nodes="nodesForC34" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_34 :nodes="nodesForC34" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
       <div class="plane-sub col-span-8 row-span-1">
-        <P_1_C_35 :nodes="nodesForC35" :highlightedNodes="props.highlightedNodes" />
+        <P_1_C_35 :nodes="nodesForC35" :highlightedNodes="props.highlightedNodes" @node-click="handleNodeClick" />
       </div>
     </div>
   </component>
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits, computed } from 'vue'; // [修正] 导入 computed
+import { defineProps, defineEmits, computed } from 'vue'; 
 import { IProps } from './P_1_C_25_inside_Obj';
 import { useControl } from './P_1_C_25_control';
 import { useComponentStyles } from './P_1_C_25_inside_UI';
@@ -65,7 +65,7 @@ import P_1_C_35 from '../P_1_C_35/P_1_C_35.vue';
 const props = defineProps<IProps>();
 const emit = defineEmits(['node-click']);
 
-const { handleClickWrapper } = useControl(props, emit);
+const { handleNodeClick } = useControl(props, emit);
 const { componentStyle } = useComponentStyles(props);
 const { tag, elementId, elementClasses, textContent } = useElement(props);
 

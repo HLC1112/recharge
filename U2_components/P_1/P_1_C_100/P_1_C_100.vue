@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from 'vue';
+ 
 import { IProps } from './P_1_C_100_inside_Obj';
 import { useControl } from './P_1_C_100_control';
 import { useComponentStyles } from './P_1_C_100_inside_UI';

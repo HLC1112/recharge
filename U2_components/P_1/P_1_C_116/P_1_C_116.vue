@@ -7,6 +7,7 @@
     <P_1_C_124
       :text="props.nodeData?.label || 'MongoDB...'"
       styleClass="db_component"
+      :isHighlighted="props.isHighlighted"
     />
   </div>
 </template>
