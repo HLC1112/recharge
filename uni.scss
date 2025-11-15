@@ -5,8 +5,13 @@ body {
   margin: 0;
   background-color: #0b1216; /* 纯色，避免 gradient 函数 */
   color: #e6f7f7;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-               Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", 
+
+         Roboto, "Helvetica Neue",
+      
+     
+
+    Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 /* ===== 页面三栏：左(固定) - 中(自适应) - 右(固定) ===== */
@@ -14,14 +19,17 @@ body {
 
 /* 左侧控制栏 */
 .controls {
-  width: 320px;
+  
+width: 320px;
   padding: 14px;
   border-right: 1px solid rgba(255,255,255,.06);
   background-color: rgba(255,255,255,.02);
   display: flex;
   flex-direction: column;
 }
-.controls .title { font-weight: 600; color: #8ef9f3; margin-bottom: 10px; }
+.controls .title { font-weight: 
+600; color: #8ef9f3; margin-bottom: 10px;
+}
 .controls .btn {
   margin-bottom: 10px;
   background: rgba(255,255,255,.06);
@@ -34,14 +42,17 @@ body {
   margin-bottom: 10px;
   background: #0b1216;
   border: 1px solid rgba(129,255,238,.25);
-  color: #e6f7f7;
+color: #e6f7f7;
   padding: 8px 10px;
   border-radius: 8px;
 }
 
 /* 中间画布 */
-.board { flex: 1 1 auto; padding: 18px; overflow: auto; }
-.board-inner { /* 块与块之间的间距由 plane 自己处理 */ }
+.board { flex: 1 1 auto; padding: 18px; overflow: auto;
+}
+.board-inner { /* 块与块之间的间距由 plane 
+
+自己处理 */ }
 
 /* 右侧日志栏 */
 .trace-log {
@@ -52,15 +63,20 @@ body {
   flex-direction: column;
 }
 .trace-head { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,.06); }
-.trace-title { color: #8ef9f3; font-weight: 700; font-size: 16px; }
+.trace-title { 
+color: #8ef9f3; font-weight: 700; font-size: 16px; }
 .trace-body { flex: 1; overflow: auto; padding: 10px 14px; }
-.trace-line { font-family: Menlo, Consolas, monospace; font-size: 12px; padding: 3px 0; white-space: pre-wrap; color: #cce7e7; }
+.trace-line { font-family: Menlo, Consolas, 
+monospace; font-size: 12px; padding: 3px 
+
+0; white-space: pre-wrap; color: #cce7e7; }
 .trace-line .tag { color: #6ff; margin-right: 6px; }
 .trace-line.ok { color: #9f9; }
 .trace-line .warn { color: #ff9; }
 .trace-line .err { color: #f99; }
 
-/* ===== 平面容器 ===== */
+/* ===== 平面容器 
+===== */
 .plane {
   border: 1px dashed rgba(129,255,238,.25);
   border-radius: 14px;
@@ -68,7 +84,9 @@ body {
   background-color: rgba(255,255,255,.02);
   margin-bottom: 16px;
 }
-.plane-title-text { color: #8ef9f3; font-weight: 600; font-size: 14px; display: inline-block; margin-bottom: 10px; }
+.plane-title-text { color: #8ef9f3; font-weight: 
+600; font-size: 14px; display: inline-block;
+margin-bottom: 10px; }
 
 /* 使用 flex 实现“伪 12 栏网格” */
 .plane-grid-container {
@@ -79,36 +97,156 @@ body {
 .node {
   margin: 6px;
   background: rgba(255,255,255,.06);
-  border: 1px solid rgba(129,255,238,.25);
+border: 1px solid rgba(129,255,238,.25);
   border-radius: 8px !important; /* 确保所有节点都有圆角 */
   padding: 8px 10px;
   min-height: 40px;
 }
-.node-title { font-size: 12px; color: #9ab7b7; margin-bottom: 4px; }
-.node-body { font-size: 13px; line-height: 1.3; }
+.node-title { font-size: 12px; color: #9ab7b7;
+margin-bottom: 4px; }
+.node-body { font-size: 
+
+13px; line-height: 1.3; }
+
+/* [ ★★★ 修正 - START ★★★ ] */
+/*
+  当追踪激活时 (body#app 具有 .is-tracing 类), 
+  默认调暗所有节点和连线。
+  然后，我们明确地覆盖高亮、失败和FSM状态，使其恢复正常亮度。
+*/
+#app.is-tracing .node {
+  /* 1. 默认调暗所有节点 */
+  opacity: 0.35 !important; 
+  transition: opacity 0.3s ease-in-out;
+}
+
+#app.is-tracing .link-default {
+  /* 1. 默认调暗所有连线 (它们已经有 0.5 不透明度) */
+  opacity: 0.15 !important; 
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* 2. 恢复高亮、失败和FSM状态的亮度 */
+#app.is-tracing .node.highlighted,
+#app.is-tracing .node.is-failure,
+#app.is-tracing div.is-failure > .flow-node, /* 适用于 P_1_C_124 包装器 */
+#app.is-tracing .node.fsm-current-state {
+  opacity: 1 !important;
+}
+
+/* 2. 恢复高亮/失败连线的亮度 */
+#app.is-tracing .link-highlighted,
+#app.is-tracing .link-failure {
+  opacity: 1 !important;
+}
+/* [ ★★★ 修正 - END ★★★ ] */
+
 
 /* 状态色（仅改边框色） */
-.festate   { border-color: #00e5ff; }
-.endstate  { border-color: #c3ff00; }
-.blockstate{ border-color: #ff8a80; }
+.festate   { border-color: rgba(129,255,238,.25) !important; }
+.endstate  { border-color: rgba(129,255,238,.25) !important; }
+.blockstate{ border-color: rgba(129,255,238,.25) !important; }
+/* [ ★★★ 修正 - START ★★★ ] */
+/* 1. 将 FSM 粘性状态 (洋红色) 移到高亮样式之前 */
+/* FSM 粘性状态高亮 (仅边框) */
+/* 2. 移除 :not(.highlighted) 和 :not(.is-failure) 选择器 */
+/* 这确保了 
+FSM 状态始终具有洋红色边框，
+    
+但它会被后面定义的 .highlighted (黄色) 和 .is-failure (红色) 样式覆盖。 */
+.node.fsm-current-state {
+  border-color: #ff00ff !important; /* 亮洋红色边框 */
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+/* [ ★★★ 修正 - END ★★★ ] */
 
 /* 节点高亮样式（亮状态） */
 .node.highlighted {
   background: rgba(255, 255, 0, 0.2) !important;
   border-color: #ffff00 !important;
   border-width: 2px !important;
-  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+  box-shadow: 0 
+0 10px rgba(255, 255, 0, 
+0.5);
+}
+
+/* [ ★ ADD ★ ] 节点失败高亮样式 (红状态) */
+.node.is-failure,
+div.is-failure > .flow-node 
+
+{ /* 适用于 P_1_C_124 的包装器 */
+  background: rgba(255, 0, 0, 0.2) !important;
+  border-color: #ff0000 !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+/* [ ★ ADD END ★ ] */
+
+
+/* [ ★★★ 修正 
+★★★ ] */
+/* (原 .fsm-current-state:not(...) 
+块  已被移除，并移至前面) */
+/* [ ★★★ 修正结束 ★★★ ] */
+
+
+/* 状态机容器待命状态（蓝色高亮"可流动"虚线边框，直到追踪结束） */
+.fsm-container.fsm-standby {
+  border: 2px dashed #00bfff !important;
+  border-radius: 14px;
+  box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+  animation: fsm-standby-pulse 2s ease-in-out infinite;
+  opacity: 1 !important; /* 解除未启动状态 */
+  position: relative;
+  z-index: 1000 !important;
+}
+
+/* DSV FSM 包装器待命状态（替换红色边框为蓝色虚线边框） 
+*/
+.dsv-fsm-wrapper.dsv-fsm-wrapper-standby {
+  border: 2px 
+dashed #00bfff !important;
+  border-radius: 14px;
+  box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+  animation: fsm-standby-pulse 2s ease-in-out infinite;
+}
+
+/* DSV FSM 容器在父容器待命状态下不显示自己的边框（避免双层边框） */
+.dsv-fsm-wrapper.dsv-fsm-wrapper-standby .fsm-container.fsm-standby {
+  border: none !important;
+  box-shadow: none !important;
+  animation: none !important;
+  border-radius: 0 !important;
+}
+
+/* 状态机容器内的所有节点在待命状态下解除未启动状态 */
+.fsm-container.fsm-standby .node {
+  opacity: 1 !important;
+}
+
+@keyframes fsm-standby-pulse {
+ 
+ 0%, 100% {
+  
+  box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 191, 255, 0.8);
+  }
 }
 
 /* SVG 画布样式 */
 .svg-canvas {
-  position: absolute;
+   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  /* [修正] z-index: 1 调整为 10，确保它在节点之上 */
+  /* [修正] z-index: 
+1 调整为 10，确保它在节点之上 
+*/
   z-index: 10;
 }
 
@@ -117,14 +255,28 @@ body {
   stroke: #999;
   stroke-width: 2;
   fill: none;
+  /* [ ★ 修正 ★ ] 遵照您的指示，将默认连线透明度降低50%，使其变暗 */
+  opacity: 0.5;
 }
 
 .link-highlighted {
   stroke: #ffff00;
   stroke-width: 3;
-  fill: none;
+fill: none;
   filter: drop-shadow(0 0 4px rgba(255, 255, 0, 0.8));
+  /* (透明度为默认的 1) */
 }
+
+/* [ ★ ADD ★ ] 连线失败高亮样式 (红状态) */
+.link-failure {
+  stroke: #ff0000;
+  stroke-width: 
+3;
+  fill: none;
+  filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.8));
+  /* (透明度为默认的 1) */
+}
+/* [ ★ ADD END ★ ] */
 
 .link-hidden {
   display: none;
@@ -135,11 +287,15 @@ body {
 .col-2  { width: 16.6667%; }
 .col-3  { width: 25%; }
 .col-4  { width: 33.3333%; }
-.col-5  { width: 41.6667%; }
+.col-5  { width: 41.6667%;
+}
 .col-6  { width: 50%; }
-.col-7  { width: 58.3333%; }
-.col-8  { width: 66.6667%; }
+.col-7  { width: 
+58.3333%; }
+.col-8  
+{ width: 66.6667%; }
 .col-9  { width: 75%; }
 .col-10 { width: 83.3333%; }
 .col-11 { width: 91.6667%; }
-.col-12 { width: 100%; }
+.col-12 { width: 100%;
+}

@@ -1,7 +1,6 @@
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { usePanelOrchestrator } from '../U8_config/panelOrchestrator'
 import type { DsvNodeData } from '../U2_components/P_1/P_1_C_84/P_1_C_84_inside_Obj'
-import { RechargeFlowClient } from '../U3_api/rechargeFlowClient'
 
 export type TraceKind = 'success' | 'error' | 'id'
 
@@ -22,31 +21,6 @@ export function useP1Page() {
   const traceId = ref<string>('')
 
   const orchestrator = usePanelOrchestrator()
-
-  const rechargeClient = new RechargeFlowClient({ wsUrl: 'ws://localhost:8081/recharge-status', apiUrl: 'http://localhost:8081/api', token: 'test-token' })
-
-  onMounted(() => {
-    try { orchestrator.loadModuleFromBackend?.(); } catch {}
-    try {
-      rechargeClient.connect()
-      rechargeClient.on('*', (e) => {
-        orchestrator.addLog(`WS ${e.type}`, 'info')
-        ;(orchestrator as any).applyEvent?.(e)
-      })
-      rechargeClient.onNormalized((n) => {
-        ;(orchestrator as any).applyNormalizedEvent?.(n)
-      })
-      try {
-        const aggWs = new WebSocket('ws://localhost:8099/panel/ws')
-        aggWs.onmessage = (ev) => {
-          try {
-            const obj = JSON.parse(String(ev.data))
-            ;(orchestrator as any).applyEvent?.({ type: obj.type, payload: obj.payload })
-          } catch (e) {}
-        }
-      } catch {}
-    } catch {}
-  })
 
   const loadDsvModalData = () => {
     if (dsvModalData.value && dsvNodeIds.value.size > 0) return;
@@ -137,26 +111,6 @@ export function useP1Page() {
           gridColumnEnd: undefined
         } 
       }));
-    // 补齐：当解析/映射缺失 parentComponentId 时，按前缀强制收集并加入 EventBus 容器
-    const dsvEventPrefixes = [/^QRY001_/, /^CMD001_/, /^CMD002_/, /^CMD003_/, /^EVT001_/, /^EVT002_/, /^DOC001_/, /^DOC002_/, /^DOC003_/];
-    const existsIds = new Set(eventBusNodes.map((n: any) => n.id));
-    orchestrator.state.nodes.forEach((n: any) => {
-      const id = String(n.id || '')
-      if (!id) return
-      if (!dsvEventPrefixes.some((re) => re.test(id))) return
-      if (existsIds.has(id)) return
-      const styleClass = id.startsWith('DOC') ? 'doc_node' : (id.startsWith('EVT002_') ? 'fail_event' : 'event_node')
-      const componentId = id.startsWith('DOC') ? 'P_1_C_133' : (styleClass === 'fail_event' ? 'P_1_C_118' : 'P_1_C_117')
-      eventBusNodes.push({
-        id,
-        componentId,
-        data: { label: n.text },
-        label: n.text,
-        styleClass,
-        layout: { gridRowStart: 1, gridColumnStart: 1 },
-      } as any)
-      existsIds.add(id)
-    })
     // [ ★ 结束新增 ★ ]
       
     // --- [ 修正结束 ] ---
@@ -289,23 +243,8 @@ export function useP1Page() {
     if (payload.type === 'id') {
       orchestrator.traceById(traceId.value || payload.id || 'demo-error')
     } else {
-      const kind = payload.type
-      fetch('http://localhost:8099/panel/play', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kind, delayMs: 800 }),
-      }).then(async (r) => {
-        if (!r.ok) throw new Error('panel/play failed')
-        orchestrator.addLog('panel:play:accepted', 'success')
-      }).catch(() => {
-        orchestrator.startTrace(kind)
-      })
+       orchestrator.startTrace(payload.type)
     }
-    rechargeClient.startRecharge('diamond_package_6480').then(() => {
-      orchestrator.addLog('api:recharge:202', 'success')
-    }).catch((e: any) => {
-      orchestrator.addLog(String(e?.message || e), 'error')
-    })
     setTimeout(() => { isTracing.value = false }, 5000)
   }
 

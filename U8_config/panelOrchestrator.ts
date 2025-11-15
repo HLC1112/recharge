@@ -1,3 +1,4 @@
+// 文件路径: U8_config\panelOrchestrator.ts
 import { reactive, ref, nextTick } from 'vue';
 import { parseMmdNodes, groupNodesByParentComponent, type ParsedNode } from './mmdParser';
 // --- [新增] ---
@@ -6,7 +7,8 @@ import { fetchSuccessTracePath } from '../U3_api/successtraceApi';
 
 type NodeType =
   | 'trigger' | 'festate' | 'endstate' | 'blockstate'
-  | 'fsmbrain' | 'feinfra' | 'ufstore' | 'uistore'
+  | 'fsmbrain' |
+'feinfra' | 'ufstore' | 'uistore'
   | 'cache' | 'appevent' | 'httpevent' | 'fsm_state'
   | 'da_orchestrator' | 'dsv' | 'db_component' | 'bus' |
 'fail_event';
@@ -29,6 +31,7 @@ interface LinkDef { from: string; to: string; }
 // 3.1 至 3.13 的完整成功追踪路径
 // [注意] 这个数组现在仅作为 API 失败时的备用，或者如果您想保留本地模拟切换时使用
 const successPath = [
+
   'FE_TRIGGER_UI', 
   'FE_TRIGGER_SLOT', 
   'E01', 
@@ -39,7 +42,7 @@ const successPath = [
   'FE_STORE_UF', 
   'E05', 
   // 'FE_APPFSM' (容器, 跳过)
-  'E07', 
+'E07', 
   'FE_TSDSV', 
   'E20', 
   'FE_STORE_UI', 
@@ -54,8 +57,8 @@ const successPath = [
   'BD_Verifying',
   'QRY3301', 
   'InternalEventBus', // 对应 'InternalCommandBus'
-  'DA_RiskFsm', 
-  'S1', 
+  // 'DA_RiskFsm', // <-- [已按您的要求移除]
+'S1', 
   'S2', 
   'CMD3302_A', 
   'InternalEventBus', // 对应 'InternalCommandBus'
@@ -70,8 +73,9 @@ const successPath = [
   'InternalEventBus', 
   'EVT3303', 
   'S3', 
-  'CMD3304', 
-  'InternalEventBus', // 对应 'InternalCommandBus'
+'CMD3304', 
+  'InternalEventBus', 
+  // 对应 'InternalCommandBus'
   'DA0_RiskActionTransaction',
   'Repo_IF_RiskEvents', 
   'Repo_IMPL_RiskEvents',
@@ -87,7 +91,7 @@ const successPath = [
   'Adapter_EventBus', 
   // 'ExitPoint' (非节点, 跳过)
   'BD_Decision', 
-  'BD_Creating', 
+'BD_Creating', 
   'DSV_AuthService', 
   'DB_Auth', 
   'DB_Outbox', // 重复访问
@@ -104,11 +108,12 @@ const successPath = [
   'E04', // 重复访问
   'E07', // 重复访问
   'FE_TSDSV', // 重复访问
-  'FE_CACHE_L', // 重复访问
+'FE_CACHE_L', // 重复访问
   'FE_STORE_UI' // 重复访问
 ];
 
-// 完整故障追踪路径 (在 DSV 内部失败)
+// ★★★ [修改后的故障路径] ★★★
+// 完整故障追踪路径 (在 DA0_RiskActionTransaction 节点失败)
 const errorPath = [
   'FE_TRIGGER_UI', 
   'FE_TRIGGER_SLOT', 
@@ -129,45 +134,28 @@ const errorPath = [
   'BD_Receiving', 
   'BD_Verifying',
   'QRY3301', 
-  'InternalEventBus', // 对应 'InternalCommandBus'
-  'DA_RiskFsm', 
+  'InternalEventBus',
+  // 'DA_RiskFsm', // <-- [已按您的要求移除]
   'S1', 
   'S2', 
   'CMD3302_A', 
-  'InternalEventBus', // 对应 'InternalCommandBus'
+  'InternalEventBus',
   'DA0_RiskEventAccessor', 
   'InternalEventBus', 
   'EVT3302_B', 
-  'S2', // 重复访问
+  'S2',
   'CMD3302_C', 
-  'InternalEventBus', // 对应 'InternalCommandBus'
+  'InternalEventBus',
   'DC_RiskCalculator', 
   'L_RiskRules', 
   'InternalEventBus',
   'EVT3303', 
   'S3', 
   'CMD3304', 
-  'InternalEventBus', // 对应 'InternalCommandBus'
-  'DA0_RiskActionTransaction',
-  // --- ★ 故障分支开始 ★ ---
-  'InternalEventBus', // 对应 'DA0_RiskActionTransaction' 的 'publish FAIL3401_ERR'
-  'FAIL3401',
-  'SF',
-  'Adapter_EventBus',
-  // 'ExitPoint' (非节点, 跳过)
-  'BD_Decision', 
-  'BD_Failing',
-  'DSV_AuthService',
-  'DB_RiskEvents_MySQL', // 写入失败日志
-  'HTTP_Res_Blocked',
-  'FE_APIClient', // 重复访问
-  // 'FE_APPFSM' (容器, 跳过)
-  'FE_Decision',
-  'FE_State_Blocked',
-  'E04', // 重复访问
-  'E07', // 重复访问
-  'FE_TSDSV', // 重复访问
-  'FE_STORE_UI' // 重复访问
+  'InternalEventBus',
+  // --- ★ 故障点 ★ ---
+  'DA0_RiskActionTransaction' // 追踪在此节点停止，模拟写入失败
+  // --- ★ [修改] 移除此后的所有节点，使其成为最后一个元素 ★ ---
 ];
 
 
@@ -176,15 +164,24 @@ export function usePanelOrchestrator() {
     nodes: [] as UINode[],
     links: [] as LinkDef[],
     ready: false,
-    sidePanelOpen: false,
+sidePanelOpen: false,
     logs: [] as string[],
      
-    // 当前步骤高亮
+    // 当前步骤高亮 (瞬时)
     activeNodeId: '' as string | null,
     errorNodeId: '' as string | null,
     activeEdge: '' as string | null,
     errorEdge: '' as string | null,
 
+    // [ ★ 核心修改 ★ ]
+    // 将 activeFsmStateId 替换为 activeFsmStates 对象
+    activeFsmStates: reactive({
+      FE_APPFSM: null as string | null,
+      BE_FSM: null as string | null,
+      DSV_FSM: null as string | null,
+    }),
+    // [ ★ 修改结束 ★ ]
+     
     // ★★★ [修改] 新增状态 (用于全局灰掉) ★★★
     isGlobalTraceActive: false,
     tracedNodeSet: new Set<string>(),
@@ -193,100 +190,17 @@ export function usePanelOrchestrator() {
 
     modals: { debugVisible: false },
   });
-
   const timer = ref<number | null>(null);
 
-  function addLog(msg: string, type: 'info' | 'success' | 'error' | 'warn' = 'info') {
+  function addLog(msg: string, type: 'info' 
+| 'success' | 'error' | 'warn' = 'info') {
     const prefix = { info:'[INFO]',success:'[SUCCESS]',error:'[ERROR]',warn:'[WARN]' }[type];
-    state.logs.push(`${prefix} ${msg}`);
+state.logs.push(`${prefix} ${msg}`);
     state.sidePanelOpen = true;
   }
 
   function makeEdgeId(from: string, to: string) {
-    return `edge-${from}-to-${to}`;
-  }
-
-  const typeToNode: Record<string, string> = {
-    'evt:PXC1_901_1': 'FE_TSDSV',
-    'evt:PXC1_901_2': 'FE_State_Blocked',
-    'evt:PXC1_901_3': 'FE_State_Blocked',
-    'evt:PXC1_902_1': 'FE_STORE_UI',
-    'evt:PXC1_902_2': 'FE_State_Blocked',
-    'evt:PXC1_902_3': 'FE_State_Blocked',
-    'EVT_1006_SUCCESS': 'BD_Decision',
-    'EVT_1006_FAILURE': 'BD_Failing',
-    'EVT_1006_TIMEOUT': 'BD_Failing',
-    'CMD_1004_START_RECHARGE': 'BD_Receiving',
-    'CMD_1005_CREATE_ORDER': 'BD_Creating',
-    'CMD_1007_PAY_ORDER': 'BD_Creating',
-    'CMD_1010_UPDATE_ASSET': 'BD_Creating',
-    'EVT_1008_1': 'BE_FSM',
-    'EVT_1008_2': 'BE_FSM',
-    'EVT_1008_3': 'BE_FSM',
-    'EVT_1009_1': 'BE_FSM',
-    'EVT_1009_2': 'BE_FSM',
-    'EVT_1009_3': 'BE_FSM',
-    'EVT_1011_1': 'BE_FSM',
-    'EVT_1011_2': 'BE_FSM',
-    'EVT_1011_3': 'BE_FSM',
-    'EVT_1012_1': 'BE_FSM',
-    'EVT_1012_2': 'BE_FSM',
-    'EVT_1012_3': 'BE_FSM',
-    // DSV internal events & docs
-    'QRY001_GetApplicationDataQry': 'QRY001_GetApplicationDataQry',
-    'CMD001_ApplyForAcceptorCmd': 'CMD001_ApplyForAcceptorCmd',
-    'CMD002_ValidateDepositCmd': 'CMD002_ValidateDepositCmd',
-    'CMD003_GrantPermissionCmd': 'CMD003_GrantPermissionCmd',
-    'EVT001_PermissionGrantedEvt': 'EVT001_PermissionGrantedEvt',
-    'EVT002_PermissionGrantFailedEvt': 'EVT002_PermissionGrantFailedEvt',
-    'DOC001_ApplicationDataSnapshotDoc': 'DOC001_ApplicationDataSnapshotDoc',
-    'DOC002_ValidationResultDoc': 'DOC002_ValidationResultDoc',
-    'DOC003_ApplicationApprovedDoc': 'DOC003_ApplicationApprovedDoc',
-  };
-
-  function setActive(nodeId: string, prevId?: string | null) {
-    const prev = prevId || state.activeNodeId;
-    state.activeNodeId = nodeId;
-    state.errorNodeId = null;
-    state.activeEdge = prev ? makeEdgeId(String(prev), nodeId) : null;
-    state.errorEdge = null;
-    state.isGlobalTraceActive = true;
-    state.tracedNodeSet.add(nodeId);
-    if (prev) state.tracedLinkSet.add(makeEdgeId(String(prev), nodeId));
-    try { document.getElementById('app')?.classList.add('is-tracing'); } catch (e) {}
-  }
-
-  function applyEvent(e: { type: string; payload: any }) {
-    const candidates = [
-      e?.payload?.nodeId,
-      e?.payload?.class,
-      e?.payload?.component,
-      e?.payload?.location,
-      typeToNode[e.type],
-      e?.payload?.eventKey ? typeToNode[e.payload.eventKey] : undefined,
-      e?.payload?.status === 'RECHARGE_SUCCESS' ? 'FE_STORE_UI' : undefined,
-      e?.payload?.status === 'SUCCESS' ? 'FE_TSDSV' : undefined,
-      e?.payload?.status === 'FAILURE' ? 'FE_State_Blocked' : undefined,
-    ];
-    const node = candidates.find((id) => id && state.nodes.some((n) => n.id === id));
-    const prevId = e?.payload?.prevId && state.nodes.some((n) => n.id === e.payload.prevId) ? String(e.payload.prevId) : null;
-    if (node) {
-      setActive(String(node), prevId);
-      addLog(`事件 ${e.type} -> ${node}`, 'info');
-    } else {
-      addLog(`事件未映射 ${e.type}`, 'warn');
-    }
-  }
-
-  function applyNormalizedEvent(n: any) {
-    if (!n) return;
-    if (n.kind === 'payment') {
-      setActive('FE_TSDSV');
-      addLog(`支付:${n.status}:${n.orderId}`, n.status === 'SUCCESS' ? 'success' : n.status === 'FAILURE' ? 'error' : 'warn');
-    } else if (n.kind === 'asset') {
-      setActive(n.status === 'RECHARGE_SUCCESS' ? 'FE_STORE_UI' : 'FE_State_Blocked');
-      addLog(`资产:${n.status}:${n.orderId}`, n.status === 'RECHARGE_SUCCESS' ? 'success' : n.status === 'FAILURE' ? 'error' : 'warn');
-    }
+     return `edge-${from}-to-${to}`;
   }
 
   function clearTrace() {
@@ -294,9 +208,17 @@ export function usePanelOrchestrator() {
     state.errorNodeId = null;
     state.activeEdge = null;
     state.errorEdge = null;
+    
+    // [ ★ 核心修改 ★ ]
+    // 重置所有FSM状态
+    state.activeFsmStates.FE_APPFSM = null;
+    state.activeFsmStates.BE_FSM = null;
+    state.activeFsmStates.DSV_FSM = null;
+    // [ ★ 修改结束 ★ ]
+
     if (timer.value) { clearInterval(timer.value); timer.value = null; }
 
-    // ★★★ [修改] 清除全局追踪状态 ★★★
+     // ★★★ [修改] 清除全局追踪状态 ★★★
     state.isGlobalTraceActive = false;
     state.tracedNodeSet.clear();
     state.tracedLinkSet.clear();
@@ -307,7 +229,8 @@ export function usePanelOrchestrator() {
     // ★★★ 修改结束 ★★★
   }
 
-  function loadDemoModule() {
+  
+function loadDemoModule() {
     addLog('请使用“选择模块”加载 .mmd 文件。', 'warn');
   }
   
@@ -315,33 +238,35 @@ export function usePanelOrchestrator() {
     // —— 工具：规范化 id（内部使用），抽 label（展示用） ——
   const toId = (raw: string) =>
     raw
-      .replace(/["'\[\]\(\)]/g, '')   
+       .replace(/["'\[\]\(\)]/g, '')   
       .trim()
-      .toLowerCase()
+       .toLowerCase()
       .replace(/\s+/g, '_')           // 空格→下划线
       .replace(/[^\w\-]/g, '');       // 仅保留字母数字_-
 
   const toLabel = (raw: string) => {
     // 支持 A["前端 API"] / A[前端 API] / "前端 API" / (前端 API)
     const m = raw.match(/["\[]\s*(.*?)\s*["\]]/);
-    if (m && m[1]) return m[1].trim();
+     if (m && m[1]) return m[1].trim();
     const n = raw.match(/^\s*"?\(?\s*(.*?)\s*\)?"?\s*$/);
     return (n?.[1] || raw).trim();
   };
 
   // [修改] loadModule 函数已更新
   function loadModule(mermaidText: string) {
-    try {
+    
+try {
       // 加载开始时，先重置 ready 状态和追踪状态
       state.ready = false;
       clearTrace(); // <-- [修改]
       
       console.log('[panelOrchestrator] loadModule 开始，重置 ready = false');
       
-      const text = (mermaidText || '').replace(/\r\n/g, '\n');
+     
+const text = (mermaidText || '').replace(/\r\n/g, '\n');
 
       if (!/^\s*(graph|flowchart)\s+/im.test(text)) {
-        addLog('未检测到合法的 Mermaid 图(缺少 "graph" 或 "flowchart" 开头)；尝试宽松解析。', 'warn');
+         addLog('未检测到合法的 Mermaid 图(缺少 "graph" 或 "flowchart" 开头)；尝试宽松解析。', 'warn');
       }
 
       // 1. 首先解析所有节点定义（使用映射表）
@@ -358,13 +283,14 @@ export function usePanelOrchestrator() {
 
       addLog(`从节点定义中解析到 ${parsedNodes.length} 个节点`, 'info');
       if (parsedNodes.length > 0) {
-        const sampleNodes = parsedNodes.slice(0, 5).map(n => `${n.id}(${n.type || 'no-type'})`).join(', ');
+    
+const sampleNodes = parsedNodes.slice(0, 5).map(n => `${n.id}(${n.type || 'no-type'})`).join(', ');
         addLog(`示例节点: ${sampleNodes}${parsedNodes.length > 5 ? '...' : ''}`, 'info');
         
         // 检查示例节点的parentComponentId
         const sampleWithParent = parsedNodes.find(n => n.parentComponentId);
         if (sampleWithParent) {
-          addLog(`示例节点映射: ${sampleWithParent.id} -> parentComponentId: ${sampleWithParent.parentComponentId}`, 'info');
+           addLog(`示例节点映射: ${sampleWithParent.id} -> parentComponentId: ${sampleWithParent.parentComponentId}`, 'info');
         }
       }
 
@@ -374,43 +300,34 @@ export function usePanelOrchestrator() {
       // 映射样式类名到节点类型（用于没有映射表的节点）
       const styleClassToType: Record<string, NodeType> = {
          'trigger': 'trigger',
-        'festate': 'festate',
-        'endstate': 'endstate',
+         'festate': 'festate',
+         'endstate': 'endstate',
         'blockstate': 'blockstate',
-        'fsmbrain': 'fsmbrain',
+         'fsmbrain': 'fsmbrain',
         'feinfra': 'feinfra',
         'ufstore': 'ufstore',
-        'uistore': 'uistore',
-         'cache': 'cache',
-        'appevent': 'appevent',
+         'uistore': 'uistore',
+          'cache': 'cache',
+         'appevent': 'appevent',
          'httpevent': 'httpevent',
         'fsm_state': 'fsm_state',
         'da_orchestrator': 'da_orchestrator',
-        'dsv': 'dsv',
-          'db_component': 'db_component',
+         'dsv': 'dsv',
+            'db_component': 'db_component',
          'bus': 'bus',
          'fail_event': 'fail_event',
         'maintaskevent': 'fail_event',
-        'beinfra': 'feinfra',
-        'event_node': 'appevent',
-        'doc_node': 'appevent',
-        'repo_iface': 'db_component',
-        'repo_impl': 'db_component',
-        'dat_component': 'db_component',
-        'adapter_component': 'feinfra',
-        'l_component': 'feinfra',
-        'dc_component': 'feinfra',
-        'da0_component': 'db_component',
-        'fedecision': 'festate',
-       };
+         'beinfra': 'feinfra',
+    
+};
 
       // 解析连线：A --> B / A---B / A-.->B /
       // 参考源代码，支持多种连线格式
       const edgePatterns = [
         /^\s*([A-Za-z0-9_]+)\s*-->\s*([A-Za-z0-9_]+)\s*$/,  // A --> B
         /^\s*([A-Za-z0-9_]+)\s*--\s*"[^"]*"\s*-->\s*([A-Za-z0-9_]+)\s*$/,  // A --
-        /^\s*([A-Za-z0-9_]+)\s*--\s*"[^"]*"\s*-->\s*([A-Za-z0-9_]+)\s*--\s*"[^"]*"\s*-->\s*([A-Za-z0-9_]+)/,  // 链式连线
-        /^\s*([A-Za-z0-9_]+)\s*---\s*([A-Za-z0-9_]+)\s*$/,  // A --- B
+   /^\s*([A-Za-z0-9_]+)\s*--\s*"[^"]*"\s*-->\s*([A-Za-z0-9_]+)\s*--\s*"[^"]*"\s*-->\s*([A-Za-z0-9_]+)/,  // 链式连线
+         /^\s*([A-Za-z0-9_]+)\s*---\s*([A-Za-z0-9_]+)\s*$/,  // A --- B
         /^\s*([A-Za-z0-9_]+)\s*-\\.->\s*([A-Za-z0-9_]+)\s*$/,  // A -.-> B
       ];
 
@@ -420,123 +337,147 @@ export function usePanelOrchestrator() {
         const baseMatch = raw.match(/^[A-Za-z0-9_]+/);
         const base = baseMatch?.[0];
         const label = toLabel(raw);
-         // 尝试匹配原始ID（保持大小写）
+        
+ 
+// 尝试匹配原始ID（保持大小写）
         const originalId = base || label;
-        const normalizedId = toId(originalId);
+         const normalizedId = toId(originalId);
          return {
           id: originalId, // 保持原始ID
           normalizedId, // 规范化ID（小写）
-          label,
+           label,
          };
       };
 
       // 将解析出的节点添加到nodesMap
        parsedNodes.forEach(parsedNode => {
-         const normalizedId = toId(parsedNode.id);
-        if (!nodesMap.has(normalizedId) && !nodesMap.has(parsedNode.id)) {
-          const nodeData: UINode = {
-            id: parsedNode.id, // 保持原始ID
-            text: parsedNode.label,
+      
+const normalizedId = toId(parsedNode.id);
+ if (!nodesMap.has(normalizedId) && !nodesMap.has(parsedNode.id)) {
+           const nodeData: UINode = {
+             id: parsedNode.id, // 保持原始ID
+         
+text: parsedNode.label,
             type: (parsedNode.type as NodeType) || 'festate',
-            pos: { top: '50%', left: '50%' },
+             pos: { top: '50%', left: '50%' },
           };
-          
+     
+
            // 添加样式（优先使用cssStyle，如果没有则使用style）
            // 确保所有节点都有样式，即使 cssStyle 是空字符串也要应用默认样式
-          const nodeStyle = parsedNode.cssStyle || 'border-radius: 8px';
-          (nodeData as any).style = nodeStyle;
+           const nodeStyle = parsedNode.cssStyle || 'border-radius: 8px';
+(nodeData as any).style = nodeStyle;
           (nodeData as any).cssStyle = nodeStyle;
           
           // 添加父组件和组件ID
            if (parsedNode.parentComponentId) {
-             (nodeData as any).parentComponentId = parsedNode.parentComponentId;
+ 
+(nodeData as any).parentComponentId = parsedNode.parentComponentId;
           }
           if (parsedNode.componentId) {
-            (nodeData as any).componentId = parsedNode.componentId;
-          }
-          
-          nodesMap.set(parsedNode.id, nodeData);
+             (nodeData as any).componentId = parsedNode.componentId;
+}
+           
+           nodesMap.set(parsedNode.id, nodeData);
           
           // 调试：输出前几个节点的样式信息，以及 BE_APIGateway 节点
            if (nodesMap.size <= 3 || parsedNode.id === 'BE_APIGateway') {
-            console.log(`[panelOrchestrator] 添加节点 ${parsedNode.id}:`, {
-               text: parsedNode.label,
+     
+console.log(`[panelOrchestrator] 添加节点 ${parsedNode.id}:`, {
+                text: parsedNode.label,
               cssStyle: parsedNode.cssStyle,
-              parentComponentId: parsedNode.parentComponentId,
-               componentId: parsedNode.componentId,
+               parentComponentId: parsedNode.parentComponentId,
+    
+componentId: parsedNode.componentId,
                 type: parsedNode.type
             });
           }
         }
-      });
+    
+});
 
       // 2. 解析连线（从连线中可能发现新的节点）
-       // 参考源代码，支持链式连线（A --> B --> C）
-      text.split('\n').forEach(rawLine => {
+        // 参考源代码，支持链式连线（A --> B --> C）
+       text.split('\n').forEach(rawLine => {
         const line = rawLine.trim();
         if (!line || !line.includes('->')) return;
-        if (line.startsWith('%')) return; // 跳过注释行
+        
+if (line.startsWith('%')) return; // 跳过注释行
 
-          // 处理链式连线：A --> B --> C --> D 或 A -- "label" --> B -- "label2" --> C
+            // 处理链式连线：A --> B --> C --> D 或 A -- "label" --> B -- "label2" --> C
         // 使用更可靠的方法：按箭头分割，然后提取每段中的节点ID
          const nodeIds: string[] = [];
       
-         // 先提取所有箭头前的节点ID（包括带标签的情况）
+       
+     
+        // 先提取所有箭头前的节点ID（包括带标签的情况）
         // 匹配：节点ID，后面跟着可选的 -- "label" --> 或直接 -->
         const beforeArrowPattern = /([A-Za-z0-9_]+)(?:\s*--\s*"[^"]*"\s*)?\s*(?:-->|--|---|-\.->)/g;
-         let match;
-         while ((match = beforeArrowPattern.exec(line)) !== null) {
+        
+ 
+let match;
+          while ((match = beforeArrowPattern.exec(line)) !== null) {
           if (match[1] && !nodeIds.includes(match[1])) {
              nodeIds.push(match[1]);
-           }
-         }
            
+}
+           }
+         
         // 提取最后一个节点ID（在最后一个箭头之后）
         // 使用更简单的方法：找到最后一个箭头后的所有内容
          const arrowPatterns = ['-->', '---', '-.->'];
-        let lastArrowIndex = -1;
-         let lastArrowPattern = '';
-        for (const pattern of arrowPatterns) {
-           const index = line.lastIndexOf(pattern);
+  
+let lastArrowIndex = -1;
+          let lastArrowPattern = '';
+for (const pattern of arrowPatterns) {
+            const index = line.lastIndexOf(pattern);
           if (index > lastArrowIndex) {
             lastArrowIndex = index;
             lastArrowPattern = pattern;
           }
-        }
-        
+          }
+         
+
          if (lastArrowIndex >= 0) {
           const afterLastArrow = line.substring(lastArrowIndex + lastArrowPattern.length).trim();
           // 移除可能的标签（-- "label"）
-           const cleaned = afterLastArrow.replace(/--\s*"[^"]*"\s*/, '').trim();
+      
+const cleaned = afterLastArrow.replace(/--\s*"[^"]*"\s*/, '').trim();
            const lastNodeMatch = cleaned.match(/^([A-Za-z0-9_]+)/);
           if (lastNodeMatch && lastNodeMatch[1] && !nodeIds.includes(lastNodeMatch[1])) {
              nodeIds.push(lastNodeMatch[1]);
-          }
+   
+}
          }
-        
+         
+     
         // 如果上面的方法没有提取到足够的节点，尝试更简单的方法：直接按箭头分割
         if (nodeIds.length < 2) {
-           // 移除所有标签，只保留节点ID和箭头
-          const cleanedLine = line.replace(/--\s*"[^"]*"\s*/g, '--');
+         
+// 移除所有标签，只保留节点ID和箭头
+           const cleanedLine = line.replace(/--\s*"[^"]*"\s*/g, '--');
           // 按箭头分割
-          const parts = cleanedLine.split(/(?:-->|--|---|-\.->)/);
+             const parts = cleanedLine.split(/(?:-->|--|---|-\.->)/);
           nodeIds.length = 0; // 清空之前的结果
            parts.forEach(part => {
-            const nodeMatch = part.trim().match(/^([A-Za-z0-9_]+)/);
+    
+const nodeMatch = part.trim().match(/^([A-Za-z0-9_]+)/);
             if (nodeMatch && nodeMatch[1] && !nodeIds.includes(nodeMatch[1])) {
-                 nodeIds.push(nodeMatch[1]);
-            }
-          });
+                    nodeIds.push(nodeMatch[1]);
+        
+}
+           });
         }
         
         // 调试：输出提取的节点ID
          if (nodeIds.length > 2) {
-          console.log(`[panelOrchestrator] 链式连线解析: ${line.substring(0, 80)}... -> 节点: [${nodeIds.join(', ')}]`);
+         
+console.log(`[panelOrchestrator] 链式连线解析: ${line.substring(0, 80)}... -> 节点: [${nodeIds.join(', ')}]`);
         }
 
         // 将链式连线转换为多个单独的连线
         for (let i = 0; i < nodeIds.length - 1; i++) {
-           const fromId = nodeIds[i];
+             const fromId = nodeIds[i];
           const targetId = nodeIds[i + 1];
           
           if (!fromId || !targetId) continue;
@@ -545,34 +486,44 @@ export function usePanelOrchestrator() {
           const R = { id: targetId, normalizedId: toId(targetId), label: targetId };
 
           // 尝试从映射表中查找节点
-           const leftNode = parsedNodesMap.get(L.id) || parsedNodesMap.get(L.normalizedId);
+              const leftNode = parsedNodesMap.get(L.id) || parsedNodesMap.get(L.normalizedId);
           const rightNode = parsedNodesMap.get(R.id) || parsedNodesMap.get(R.normalizedId);
 
           // 如果找到了映射的节点，使用映射信息；否则创建新节点
-          if (leftNode && !nodesMap.has(leftNode.id)) {
+           if (leftNode && !nodesMap.has(leftNode.id)) {
              const leftNodeStyle = leftNode.cssStyle || 'border-radius: 8px';
             const leftNodeData: UINode = {
-                id: leftNode.id,
-               text: leftNode.label,
+                 id: leftNode.id,
+                text: leftNode.label,
                type: (leftNode.type as NodeType) || 'festate',
-               pos: { top: '50%', left: '50%' },
+                pos: { top: '50%', left: '50%' },
              };
             (leftNodeData as any).style = leftNodeStyle;
             (leftNodeData as any).cssStyle = leftNodeStyle;
             if (leftNode.parentComponentId) {
-               (leftNodeData as any).parentComponentId = leftNode.parentComponentId;
+                  (leftNodeData as any).parentComponentId = leftNode.parentComponentId;
             }
-             if (leftNode.componentId) {
+     
+if (leftNode.componentId) {
                (leftNodeData as any).componentId = leftNode.componentId;
             }
-             nodesMap.set(leftNode.id, leftNodeData);
-} else if (!leftNode && L.id && !nodesMap.has(L.id) && !nodesMap.has(L.normalizedId)) {
-             // 跳过容器节点（如 FE_APPFSM），它们不应该作为普通节点显示
-            if (L.id === 'FE_APPFSM' || L.id.toUpperCase() === 'FE_APPFSM') {
-               // FE_APPFSM 是容器标题，不创建为节点，但连线仍然会被创建
-             } else {
+            
+  nodesMap.set(leftNode.id, leftNodeData);
+} else if (!leftNode && L.id && !nodesMap.has(L.id) && !nodesMap.has(L.normalizedId)) 
+{
+             
+             // === [MODIFICATION START] ===
+            
+  // [修改] 
+// 跳过容器节点（如 FE_APPFSM, DA_RiskFsm, InternalEventBus），它们不应该作为普通节点显示
+            const upperLId = L.id.toUpperCase();
+            if (upperLId === 'FE_APPFSM' || upperLId === 'DA_RISKFSM' || upperLId === 'INTERNALEVENTBUS') {
+               // 容器标题，不创建为节点，但连线仍然会被创建
+            } else {
+            // === [MODIFICATION END] ===
+              
               // 后备方案：根据label推断类型
-               let type: NodeType = 'festate';
+                 let type: NodeType = 'festate';
               if (/(fail|错误|异常|超时)/i.test(L.label)) type = 'fail_event';
               else if (/^https?\b|\bpost\b|\bget\b/i.test(L.label)) type = 'httpevent';
               else if (/event|事件中心/i.test(L.label)) type = 'bus';
@@ -580,40 +531,52 @@ export function usePanelOrchestrator() {
               else if (/^evt[:：]/i.test(L.label)) type = 'trigger';
               
               const fallbackLeftNode: UINode = {
-                 id: L.id,
+                id: L.id,
                  text: L.label,
                  type,
-                 pos: { top: '50%', left: '50%' },
-              };
+                   pos: { top: '50%', left: '50%' },
+          
+};
               (fallbackLeftNode as any).style = 'border-radius: 8px';
               (fallbackLeftNode as any).cssStyle = 'border-radius: 8px';
               nodesMap.set(L.id, fallbackLeftNode);
             }
-          }
-             if (rightNode && !nodesMap.has(rightNode.id)) {
+           }
+         if (rightNode && !nodesMap.has(rightNode.id)) {
 			const rightNodeStyle = rightNode.cssStyle || 'border-radius: 8px';
             const rightNodeData: UINode = {
                 id: rightNode.id,
-               text: rightNode.label,
-               type: (rightNode.type as NodeType) || 'festate',
+                text: rightNode.label,
+                  type: (rightNode.type as NodeType) || 'festate',
                 pos: { top: '50%', left: '50%' },
-            };
-            (rightNodeData as any).style = rightNodeStyle;
+             };
+(rightNodeData as any).style = rightNodeStyle;
             (rightNodeData as any).cssStyle = rightNodeStyle;
             if (rightNode.parentComponentId) {
-               (rightNodeData as any).parentComponentId = rightNode.parentComponentId;
+      
+(rightNodeData as any).parentComponentId = rightNode.parentComponentId;
             }
              if (rightNode.componentId) {
-              (rightNodeData as any).componentId = rightNode.componentId;
+               (rightNodeData as any).componentId = rightNode.componentId;
             }
-             nodesMap.set(rightNode.id, rightNodeData);
+      
+nodesMap.set(rightNode.id, rightNodeData);
           } else if (!rightNode && R.id && !nodesMap.has(R.id) && !nodesMap.has(R.normalizedId)) {
-             // 跳过容器节点（如 FE_APPFSM），它们不应该作为普通节点显示
-            if (R.id === 'FE_APPFSM' || R.id.toUpperCase() === 'FE_APPFSM') {
-                 // FE_APPFSM 是容器标题，不创建为节点，但连线仍然会被创建
+             
+             // === [MODIFICATION START] ===
+            // [修改] 
+// 跳过容器节点（如 FE_APPFSM, DA_RiskFsm, InternalEventBus），它们不应该作为普通节点显示
+            const upperRId = R.id.toUpperCase();
+            if (upperRId === 'FE_APPFSM' || upperRId === 'DA_RISKFSM' || upperRId === 'INTERNALEVENTBUS') {
+               // 容器标题，不创建为节点，但连线仍然会被创建
             } else {
-              // 后备方案
-               let type: NodeType = 'festate';
+            // === [MODIFICATION END] ===
+              
+    
+   
+         // 后备方案
+       
+let type: NodeType = 'festate';
 if (/(fail|错误|异常|超时)/i.test(R.label)) type = 'fail_event';
               else if (/^https?\b|\bpost\b|\bget\b/i.test(R.label)) type = 'httpevent';
               else if (/event|事件中心/i.test(R.label)) type = 'bus';
@@ -621,23 +584,27 @@ if (/(fail|错误|异常|超时)/i.test(R.label)) type = 'fail_event';
               else if (/^evt[:：]/i.test(R.label)) type = 'trigger';
               
               const fallbackRightNode: UINode = {
-                id: R.id,
+   
+id: R.id,
                  text: R.label,
                  type,
-                 pos: { top: '50%', left: '50%' },
+          
+pos: { top: '50%', left: '50%' },
               };
               (fallbackRightNode as any).style = 'border-radius: 8px';
               (fallbackRightNode as any).cssStyle = 'border-radius: 8px';
               nodesMap.set(R.id, fallbackRightNode);
             }
-          }
+           }
 
-           // 添加连线（使用原始ID）
-           if (L.id && R.id) {
+  
+// 添加连线（使用原始ID）
+              if (L.id && R.id) {
              links.push({ from: L.id, to: R.id });
           }
-         }
-      });
+          }
+ 
+});
 
       addLog(`总共解析到 ${nodesMap.size} 个节点，${links.length} 条连线`, 'info');
 if (nodesMap.size === 0) {
@@ -648,7 +615,7 @@ if (nodesMap.size === 0) {
       }
 
       // 验证节点是否包含parentComponentId
-       const nodesWithParent = Array.from(nodesMap.values()).filter(n => (n as any).parentComponentId);
+        const nodesWithParent = Array.from(nodesMap.values()).filter(n => (n as any).parentComponentId);
       addLog(`验证: ${nodesWithParent.length}/${nodesMap.size} 个节点包含parentComponentId`, 'info');
       if (nodesWithParent.length > 0) {
         const sample = nodesWithParent[0];
@@ -657,18 +624,21 @@ if (nodesMap.size === 0) {
         addLog('警告：没有节点包含parentComponentId，检查nodeMapping.json是否正确生成', 'warn');
       }
       
-      // 特别检查 BE_APIGateway 节点
+    
+// 特别检查 BE_APIGateway 节点
        const beGatewayNode = nodesMap.get('BE_APIGateway');
       if (beGatewayNode) {
-        console.log(`[panelOrchestrator] BE_APIGateway 节点信息:`, {
+           console.log(`[panelOrchestrator] BE_APIGateway 节点信息:`, {
           id: beGatewayNode.id,
-           text: beGatewayNode.text,
-           type: beGatewayNode.type,
+            text: beGatewayNode.text,
+  
+type: beGatewayNode.type,
           parentComponentId: (beGatewayNode as any).parentComponentId,
-           componentId: (beGatewayNode as any).componentId
+            componentId: (beGatewayNode as any).componentId
          });
       } else {
-         console.warn(`[panelOrchestrator] 警告: 未找到 BE_APIGateway 节点`);
+      
+console.warn(`[panelOrchestrator] 警告: 未找到 BE_APIGateway 节点`);
       }
 
       // 按父组件分组节点
@@ -678,23 +648,27 @@ if (nodesMap.size === 0) {
         addLog(`节点已映射到 ${parentComponentIds.length} 个父组件: ${parentComponentIds.join(', ')}`, 'info');
       }
 
-      // —— 简单环形布局（保持你原先的思路） ——
+    
+// —— 简单环形布局（保持你原先的思路） ——
       const ids = Array.from(nodesMap.keys());
       const n = ids.length;
       const nodes: UINode[] = ids.map((id, i) => {
          const angle = (i / Math.max(1, n)) * Math.PI * 2;
-        const rTop = 30 + 20 * Math.sin(angle);   // 10%~50% 之间摆放
+         const rTop = 30 + 20 * Math.sin(angle);   // 10%~50% 之间摆放
          const rLeft = 30 + 40 * Math.cos(angle);  // -10%~70% 之间摆放
-         const node = nodesMap.get(id)!;
-        node.pos = {
-           top: `${Math.max(8, Math.min(85, rTop))}%`,
+         
+  const node = nodesMap.get(id)!;
+         node.pos = {
+ 
+top: `${Math.max(8, Math.min(85, rTop))}%`,
           left: `${Math.max(5, Math.min(90, rLeft))}%`,
         };
         return node;
-      });
+          });
 
       // —— 应用到界面 ——
-       // [修改] clearTrace() 已在函数开头调用
+ 
+// [修改] clearTrace() 已在函数开头调用
       state.nodes.splice(0, state.nodes.length, ...nodes);
       state.links.splice(0, state.links.length, ...links);
       state.ready = true;
@@ -703,14 +677,14 @@ if (nodesMap.size === 0) {
       console.log(`[panelOrchestrator] 更新后 state.ready = ${state.ready}`);
       console.log(`[panelOrchestrator] 更新后 state.nodes[0] =`, state.nodes[0] ? {
         id: state.nodes[0].id,
-          text: state.nodes[0].text,
+         text: state.nodes[0].text,
          parentComponentId: (state.nodes[0] as any).parentComponentId,
         style: (state.nodes[0] as any).style
       } : null);
 
       addLog(`成功解析 Mermaid：节点 ${nodes.length} 个，连线 ${links.length} 条。`, 'success');
       console.log(`[panelOrchestrator] 成功设置 state.nodes = ${nodes.length} 个节点`);
-      console.log(`[panelOrchestrator] 节点示例:`, nodes.slice(0, 3).map(n => ({ id: n.id, parentComponentId: (n as any).parentComponentId })));
+console.log(`[panelOrchestrator] 节点示例:`, nodes.slice(0, 3).map(n => ({ id: n.id, parentComponentId: (n as any).parentComponentId })));
       nextTick(() => window.dispatchEvent(new Event('resize')));
     } catch (e: any) {
       console.error('[panelOrchestrator] loadModule 错误:', e);
@@ -719,42 +693,82 @@ if (nodesMap.size === 0) {
       if (e?.stack) {
         addLog(`错误堆栈: ${e.stack}`, 'error');
       }
-      throw e;
-    }
+       throw e;
+}
   }
 
+  
   // [修改] startTrace 函数已更新
   async function startTrace(kind: 'success' | 'error') {
     if (!state.ready) { addLog('请先加载模块。', 'warn'); return; }
+
+    // [ ★ 核心修改 ★ ]
+    // 1. 定义三个FSM各自的状态节点ID
+    const feFsmStateIds = new Set([
+      'FE_State_Idle', 
+      'FE_State_Requesting', 
+      'FE_State_Allowed', 
+      'FE_State_Blocked',
+      'FE_Decision', // 前端决策点也视为 FSM 状态
+    ]);
+    const beFsmStateIds = new Set([
+      'BD_Receiving',
+      'BD_Verifying',
+      'BD_Decision',
+      'BD_Creating',
+      'BD_Failing',
+    ]);
+    const dsvFsmStateIds = new Set([
+      'S1',
+      'S2',
+      'S2P',
+      'S3',
+      'S3T',
+      'S_COMP',
+      'S4',
+      'SF'
+    ]);
+    // [ ★ 修改结束 ★ ]
+    
+    // 2. 清理并设置初始 FSM 状态
     clearTrace();
+    // [ ★ 核心修改 ★ ]
+    state.activeFsmStates.FE_APPFSM = 'FE_State_Idle'; // 假设追踪总是从 Idle 开始
+    state.activeFsmStates.BE_FSM = null;
+    state.activeFsmStates.DSV_FSM = null;
+    // [ ★ 修改结束 ★ ]
     
     let seq: string[]; // 路径序列
 
     // ★★★ 核心修改点 ★★★
     if (kind === 'success') {
-      // --- 对于“成功”追踪，我们调用后端 API ---
+      
+// --- 对于“成功”追踪，我们调用后端 API ---
       addLog(`--- 正在从后端请求“成功”追踪路径... ---`, 'info');
       try {
         // [新增] 调用 API
         seq = await fetchSuccessTracePath();
         addLog(`--- 成功获取路径，共 ${seq.length} 步 ---`, 'success');
       } catch (e: any) {
-        // [新增] API 失败处理
-        addLog(`--- 获取“成功”路径失败: ${e.message || '未知错误'} ---`, 'error');
+       
+// [新增] API 失败处理
+         addLog(`--- 获取“成功”路径失败: ${e.message || '未知错误'} ---`, 'error');
         // [新增] API 失败时，回退到本地 hardcode 的 successPath
         addLog(`--- [回退] 启用本地模拟“成功”路径 ---`, 'warn');
         seq = successPath;
-        if (seq.length === 0) {
-           addLog('本地回退路径(successPath)也为空。', 'error');
+if (seq.length === 0) {
+           
+addLog('本地回退路径(successPath)也为空。', 'error');
            clearTrace(); // 清理状态
            return; // 终止执行
         }
       }
     } else {
-      // --- 对于“故障”追踪，我们保留本地模拟 ---
-      seq = errorPath;
+        // --- 对于“故障”追踪，我们保留本地模拟 ---
+ 
+seq = errorPath;
       // (原始日志在下面统一添加)
-    }
+     }
     // ★★★ 修改结束 ★★★
     
     if (seq.length === 0) {
@@ -765,8 +779,8 @@ if (nodesMap.size === 0) {
     // ★★★ [修改] 设置全局追踪状态 ★★★
     state.isGlobalTraceActive = true; 
     state.tracedNodeSet = new Set(seq); 
-    state.tracedLinkSet.clear(); 
-    for (let i = 1; i < seq.length; i++) { 
+    state.tracedLinkSet.clear();
+for (let i = 1; i < seq.length; i++) { 
       state.tracedLinkSet.add(makeEdgeId(seq[i-1], seq[i])); 
     }
     // 添加 CSS Class
@@ -774,38 +788,87 @@ if (nodesMap.size === 0) {
       document.getElementById('app')?.classList.add('is-tracing');
     } catch (e) {}
     // ★★★ 修改结束 ★★★
+ 
     
     
+
     addLog(`--- 开始 ${kind === 'success' ? '成功' : '故障'} 追踪，路径: ${seq.join(' -> ')} ---`, kind === 'success' ? 'success' : 'error'); 
     
     let step = 0;
+    
+    // ★★★ [修改后的 setInterval] ★★★
     timer.value = window.setInterval(() => {
-      if (step >= seq.length) {
-          addLog(`--- 追踪${kind === 'success' ? '成功完成' : '失败'} ---`, kind === 'success' ? 'success' : 'error');
-        if (kind === 'error') state.modals.debugVisible = true;
-        
-        // ★★★ [修改] 追踪结束时不再调用 clearTrace() ★★★
+        if (step >= seq.length) {
+   
+addLog(`--- 追踪${kind === 'success' ? '成功完成' : '失败'} ---`, kind === 'success' ? 'success' : 'error');
+
+        // ★★★ 核心修改：在追踪结束时设置故障点 ★★★
+        if (kind === 'error') {
+           
+ 
+state.modals.debugVisible = true;
+          // 1. 获取路径中的最后一个节点 ID
+          const lastNodeId = seq[seq.length - 1];
+          
+          
+if (lastNodeId) {
+   
+ 
+// 2. 将最后一个节点设置为 active 和 error
+            // [ ★ 修改 ★ ]
+            // 失败时，瞬时高亮(active)和错误高亮(error)都设置
+            // FSM 状态(activeFsmStateId)已在最后一步(FE_State_Blocked)设置
+      
+             state.activeNodeId = lastNodeId;
+            state.errorNodeId = lastNodeId; 
+            addLog(`--- 故障点定位: ${lastNodeId} ---`, 'error');
+           }
+            
+          // 3. 将最后一条连线设置为 active 和 error
+          if (seq.length > 1) {
+   
+const lastEdge = makeEdgeId(seq[seq.length - 2], lastNodeId);
+             state.activeEdge = lastEdge;
+             state.errorEdge = lastEdge;
+          }
+  
+}
+        // ★★★ 修改结束 ★★★
+
         clearInterval(timer.value!);
         timer.value = null;
         return;
-      }
+}
       const nodeId = seq[step];
-      const prevId = step > 0 ? seq[step-1] : null;
+       const prevId = step > 0 ? seq[step-1] : null;
 
+      // 1. 设置瞬时高亮 (Flash)
       state.activeNodeId = nodeId;
        
-      const currentNode = state.nodes.find(n => n.id === nodeId);
-      state.errorNodeId = (kind === 'error' && currentNode && (currentNode.type === 'fail_event' || nodeId.toUpperCase().includes('FAIL') || nodeId.toUpperCase().includes('ERROR'))) ? nodeId : null;
+      // [修改] 移除运行中的错误高亮，只在最后一步设置
+      state.errorNodeId = null; 
       
       state.activeEdge = prevId ? makeEdgeId(prevId, nodeId) : null;
-      state.errorEdge = (kind === 'error' && state.errorNodeId && prevId) ? makeEdgeId(prevId, nodeId) : null;
+      // [修改] 移除运行中的错误高亮
+      state.errorEdge = null; 
 
-      step++; 
+      // 2. [ ★ 核心修改 ★ ] 更新粘性 FSM 状态 (独立更新)
+      if (feFsmStateIds.has(nodeId)) {
+        state.activeFsmStates.FE_APPFSM = nodeId;
+      } else if (beFsmStateIds.has(nodeId)) {
+        state.activeFsmStates.BE_FSM = nodeId;
+      } else if (dsvFsmStateIds.has(nodeId)) {
+        state.activeFsmStates.DSV_FSM = nodeId;
+      }
+      // [ ★ 修改结束 ★ ]
+     
+  step++; 
     }, 1200); 
+    // ★★★ [setInterval 修改结束] ★★★
   }
 
   function traceById(_id: string) {
-    // [修改] 确保 'id' 追踪也设置全局状态
+     // [修改] 确保 'id' 追踪也设置全局状态
     // (当前 'id' 追踪只是 'error' 的别名, 所以 'startTrace' 会处理)
     startTrace('error');
   }
@@ -813,22 +876,28 @@ if (nodesMap.size === 0) {
   return {
     state,
      get nodes() { return state.nodes; },
-    get links() { return state.links; },
+     get links() { return state.links; },
     get ready() { return state.ready; },
     get sidePanelOpen() { return state.sidePanelOpen; },
-    get logs() { return state.logs; },
+     get logs() { return state.logs; },
     get activeNodeId() { return state.activeNodeId; },
     get errorNodeId() { return state.errorNodeId; },
-    get activeEdge() { return state.activeEdge; },
+     get activeEdge() { return state.activeEdge; },
     get errorEdge() { return state.errorEdge; },
     
-    // ★★★ [修改] 暴露新状态 ★★★
+    // [ ★ 核心修改 ★ ]
+    // 暴露整个对象
+    get activeFsmStates() { return state.activeFsmStates; },
+    // [ ★ 修改结束 ★ ]
+    
+   
+// ★★★ [修改] 暴露新状态 ★★★
     get isGlobalTraceActive() { return state.isGlobalTraceActive; },
     get tracedNodeSet() { return state.tracedNodeSet; },
     get tracedLinkSet() { return state.tracedLinkSet; },
     // ★★★ 修改结束 ★★★
 
     get modals() { return state.modals; },
-    addLog, loadDemoModule, loadModule, startTrace, traceById, applyEvent, applyNormalizedEvent,
+    addLog, loadDemoModule, loadModule, startTrace, traceById,
   };
 }

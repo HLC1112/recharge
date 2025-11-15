@@ -8,10 +8,6 @@
   "devDependencies": {
     "@types/howler": "^2.2.12",
     "@vitejs/plugin-vue": "^6.0.1",
-    "vite": "^7.1.5",
-    "ws": "^8.18.3"
-  },
-  "scripts": {
-    "panel:server": "node panel-aggregator.cjs"
+    "vite": "^7.1.5"
   }
 }

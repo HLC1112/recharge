@@ -8,16 +8,16 @@
  * 假设它返回一个包含节点 ID 字符串的数组。
  */
 export type BackendTracePath = string[];
-export type TraceEvent = { type: 'step' | 'error' | 'complete'; nodeId?: string; prevId?: string; message?: string };
 
 /**
  * 从后端获取“成功”追踪路径。
  * @returns Promise<BackendTracePath> - 一个包含节点 ID 数组的 Promise。
  */
-const API_BASE = 'http://localhost:8081';
-
 export async function fetchSuccessTracePath(): Promise<BackendTracePath> {
-  const API_ENDPOINT = `${API_BASE}/traces/success`;
+  // 
+  // 替换为您的真实后端 API 地址
+  // 
+  const API_ENDPOINT = `https://api.your-backend.com/traces/success`;
 
   console.log(`[successtraceApi] 正在请求: ${API_ENDPOINT}`);
 
@@ -53,15 +53,4 @@ export async function fetchSuccessTracePath(): Promise<BackendTracePath> {
     // 将错误抛出，以便上层 (Orchestrator) 可以捕获并显示在日志中
     throw error;
   }
-}
-
-export async function fetchMermaidGraph(flowId?: string): Promise<string> {
-  const url = flowId ? `${API_BASE}/flows/${encodeURIComponent(flowId)}/mermaid` : `${API_BASE}/flows/mermaid`;
-  console.log(`[successtraceApi] 请求 Mermaid: ${url}`);
-  const resp = await fetch(url, { method: 'GET' });
-  if (!resp.ok) throw new Error(`Mermaid 请求失败: ${resp.status} ${resp.statusText}`);
-  const text = await resp.text();
-  if (!text || !/\b(graph|flowchart)\b/.test(text)) throw new Error('返回的 Mermaid 文本不合法');
-  console.log(`[successtraceApi] Mermaid 长度: ${text.length}`);
-  return text;
 }
